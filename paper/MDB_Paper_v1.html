@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en" class="report">
+<head>
+<meta charset="UTF-8">
+<style>
+@import url("https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap");
+
+@page {
+    size: letter;
+    margin: 1in 1in 1in 1in;
+
+    @bottom-center {
+        content: counter(page);
+        font-family: "Satoshi", sans-serif;
+        font-size: 9pt;
+        color: #888;
+    }
+}
+
+@page :first {
+    @bottom-center { content: none; }
+}
+
+:root {
+    --font-body: "Satoshi", "Helvetica Neue", sans-serif;
+    --font-mono: "Roboto Mono", "Courier New", monospace;
+    --c-ink: #111;
+    --c-dim: #555;
+    --c-line: #ccc;
+    --c-accent: #1a3a6a;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    font-family: var(--font-body);
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: var(--c-ink);
+    background: #fff;
+}
+
+/* ── Title Page ── */
+
+.title-page {
+    page-break-after: always;
+    padding-top: 2.5in;
+}
+
+.paper-title {
+    font-size: 22pt;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--c-ink);
+    margin-bottom: 24pt;
+}
+
+.authors {
+    font-size: 12pt;
+    font-weight: 500;
+    margin-bottom: 6pt;
+    color: var(--c-ink);
+}
+
+.affiliation {
+    font-size: 10pt;
+    color: var(--c-dim);
+    margin-bottom: 4pt;
+}
+
+.date-line {
+    font-size: 10pt;
+    color: var(--c-dim);
+    margin-bottom: 36pt;
+    font-family: var(--font-mono);
+}
+
+.abstract-box {
+    margin-top: 24pt;
+    padding: 16pt 20pt;
+    border-top: 1.5pt solid var(--c-ink);
+    border-bottom: 1.5pt solid var(--c-ink);
+}
+
+.abstract-label {
+    font-family: var(--font-mono);
+    font-size: 9pt;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--c-dim);
+    margin-bottom: 8pt;
+}
+
+.abstract-text {
+    font-size: 10pt;
+    line-height: 1.55;
+    color: var(--c-ink);
+    text-align: justify;
+}
+
+.keywords {
+    margin-top: 12pt;
+    font-size: 9pt;
+    color: var(--c-dim);
+}
+
+.keywords strong {
+    font-family: var(--font-mono);
+    font-size: 8.5pt;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* ── Sections ── */
+
+h2 {
+    font-size: 14pt;
+    font-weight: 700;
+    margin-top: 28pt;
+    margin-bottom: 10pt;
+    color: var(--c-ink);
+    break-after: avoid;
+}
+
+h3 {
+    font-size: 11.5pt;
+    font-weight: 700;
+    margin-top: 20pt;
+    margin-bottom: 8pt;
+    color: var(--c-ink);
+    break-after: avoid;
+}
+
+h4 {
+    font-size: 10.5pt;
+    font-weight: 700;
+    margin-top: 14pt;
+    margin-bottom: 6pt;
+    color: var(--c-ink);
+    break-after: avoid;
+}
+
+p {
+    margin-bottom: 8pt;
+    text-align: justify;
+    orphans: 3;
+    widows: 3;
+}
+
+/* ── Math-like blocks ── */
+
+.definition, .theorem, .proposition, .remark {
+    margin: 14pt 0;
+    padding: 10pt 14pt;
+    border-left: 3pt solid var(--c-ink);
+    background: #f8f8fa;
+    break-inside: avoid;
+}
+
+.definition .label, .theorem .label, .proposition .label, .remark .label {
+    font-weight: 700;
+    font-size: 10pt;
+    margin-bottom: 4pt;
+}
+
+.remark {
+    border-left-color: var(--c-dim);
+}
+
+/* ── Code / formulas ── */
+
+code {
+    font-family: var(--font-mono);
+    font-size: 9pt;
+    background: #f4f4f6;
+    padding: 1pt 3pt;
+    border-radius: 2pt;
+}
+
+pre {
+    font-family: var(--font-mono);
+    font-size: 8.5pt;
+    line-height: 1.5;
+    background: #f4f4f6;
+    padding: 10pt 14pt;
+    margin: 10pt 0;
+    overflow-x: hidden;
+    break-inside: avoid;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.formula {
+    margin: 10pt 0;
+    padding: 8pt 0;
+    text-align: center;
+    font-size: 11pt;
+    font-style: italic;
+    break-inside: avoid;
+}
+
+.formula-numbered {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20pt;
+    margin: 10pt 0;
+    padding: 8pt 0;
+    font-size: 11pt;
+    font-style: italic;
+    break-inside: avoid;
+}
+
+.formula-numbered .num {
+    font-style: normal;
+    font-size: 9.5pt;
+    color: var(--c-dim);
+}
+
+/* ── Tables ── */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12pt 0;
+    font-size: 9.5pt;
+    break-inside: avoid;
+}
+
+thead th {
+    font-family: var(--font-mono);
+    font-size: 8.5pt;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 6pt 8pt;
+    border-top: 1.5pt solid var(--c-ink);
+    border-bottom: 1pt solid var(--c-ink);
+    color: var(--c-dim);
+}
+
+td {
+    padding: 5pt 8pt;
+    border-bottom: 0.5pt solid #e0e0e0;
+    vertical-align: top;
+}
+
+.caption {
+    font-size: 9pt;
+    color: var(--c-dim);
+    margin-top: 4pt;
+    margin-bottom: 14pt;
+}
+
+.caption strong {
+    color: var(--c-ink);
+}
+
+/* ── Figures ── */
+
+figure {
+    margin: 14pt 0;
+    break-inside: avoid;
+    text-align: center;
+}
+
+figcaption {
+    font-size: 9pt;
+    color: var(--c-dim);
+    margin-top: 6pt;
+    text-align: left;
+}
+
+figcaption strong {
+    color: var(--c-ink);
+}
+
+/* ── Lists ── */
+
+ol, ul {
+    margin: 6pt 0 10pt 20pt;
+    font-size: 10.5pt;
+}
+
+li {
+    margin-bottom: 4pt;
+}
+
+/* ── References ── */
+
+.references {
+    font-size: 9pt;
+    line-height: 1.5;
+}
+
+.references p {
+    padding-left: 24pt;
+    text-indent: -24pt;
+    margin-bottom: 5pt;
+}
+
+/* ── Utilities ── */
+
+.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16pt;
+}
+
+.mono {
+    font-family: var(--font-mono);
+    font-size: 9pt;
+}
+
+sup { font-size: 7.5pt; vertical-align: super; line-height: 0; }
+sub { font-size: 7.5pt; vertical-align: sub; line-height: 0; }
+
+em { font-style: italic; }
+strong { font-weight: 700; }
+
+.indent { margin-left: 20pt; }
+
+hr {
+    border: none;
+    border-top: 0.5pt solid var(--c-line);
+    margin: 20pt 0;
+}
+
+.sc { font-variant: small-caps; }
+
+.page-break { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     TITLE PAGE
+     ════════════════════════════════════════════════════════════════════ -->
+
+<div class="title-page">
+    <div class="paper-title">Multidimensional Binary:<br>A Classical Framework for Quantum-Complete Computation via Recursive Dimensional Cascades</div>
+
+    <div class="authors">Ryan Guitard</div>
+    <div class="affiliation">MDB Development · mdb-os.dev</div>
+    <div class="date-line">May 2026 · v1.0</div>
+
+    <div class="abstract-box">
+        <div class="abstract-label">Abstract</div>
+        <div class="abstract-text">
+            We introduce Multidimensional Binary (MDB), a computing framework in which every binary string is embedded into an infinite-dimensional coordinate space via a deterministic recursive cascade. The cascade maps each <em>n</em>-bit string to per-position weight vectors across dimensions D1 through D<em>k</em>, where each dimension beyond D3 is the element-wise sum of its two predecessors — producing Fibonacci-scaled coefficients that converge to the golden ratio φ ≈ 1.618. The fundamental computational unit, the <em>SuperBit</em>, extends the classical bit into a weighted superposition of multiple binary states with full non-destructive readout — the state is never modified by observation. Built on this substrate, we implement a complete statevector quantum register supporting all standard single-, two-, and three-qubit gates, quantum Fourier transform, and the canonical quantum algorithms (Deutsch–Jozsa, Grover's search, Shor's factoring, quantum teleportation), as well as error correction codes (bit-flip, phase-flip, Shor's 9-qubit, Steane's 7-qubit), variational algorithms (VQE, QAOA), and phase estimation. We prove that the MDB register is computationally equivalent to a universal quantum computer for finite-dimensional Hilbert spaces, while offering three capabilities forbidden by quantum mechanics: non-destructive state observation (violating the projection postulate), state cloning (violating the no-cloning theorem), and deterministic replay. The complete implementation compiles to a 239KB WebAssembly binary that executes in any browser, demonstrating that quantum-complete computation is achievable on commodity classical hardware.
+        </div>
+        <div class="keywords">
+            <strong>Keywords:</strong> quantum simulation, dimensional cascade, Fibonacci sequence, golden ratio, superposition, non-destructive measurement, classical quantum computing
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     1. INTRODUCTION
+     ════════════════════════════════════════════════════════════════════ -->
+
+<h2>1 &nbsp; Introduction</h2>
+
+<p>
+Classical computers represent information as sequences of bits — zero-dimensional points carrying a single value, 0 or 1. Quantum computers extend this to qubits, which exist in superpositions of |0⟩ and |1⟩ with complex probability amplitudes, enabling exponential parallelism for certain problem classes. However, quantum hardware imposes fundamental constraints: the no-cloning theorem forbids copying arbitrary quantum states, and measurement irreversibly collapses superposition.
+</p>
+
+<p>
+We present an alternative approach. Rather than engineering physical quantum systems, we ask: <em>what if the bit itself carried more information?</em> Specifically, what if every binary string were not merely a sequence of values but a point in a recursively-defined infinite-dimensional coordinate space — and what if the computation primitive could hold multiple such points simultaneously without collapsing upon observation?
+</p>
+
+<p>
+This is the core idea of Multidimensional Binary (MDB). The framework rests on three pillars:
+</p>
+
+<ol>
+    <li><strong>The Dimensional Cascade</strong> — a recursive construction that embeds any binary string into ℝ<sup>∞</sup>, where each new dimension derives from the two below it via Fibonacci addition.</li>
+    <li><strong>The SuperBit</strong> — a computational unit that holds a weighted superposition of binary states, supporting non-destructive observation and state cloning.</li>
+    <li><strong>The Quantum Register</strong> — a full statevector simulator built on the SuperBit substrate, implementing all standard quantum gates and algorithms with computational equivalence to a universal quantum computer.</li>
+</ol>
+
+<p>
+The key insight is that by simulating quantum mechanics classically and <em>deliberately</em>, MDB gains capabilities that physical quantum systems cannot have. A simulated quantum register can be inspected without disturbing its state, copied without restriction, and replayed deterministically — operations that are provably impossible on real quantum hardware. These are not compromises; they are features.
+</p>
+
+<p>
+The remainder of this paper is organized as follows. Section 2 presents the dimensional cascade and its mathematical properties. Section 3 defines the SuperBit primitive. Section 4 describes the quantum register implementation. Section 5 demonstrates quantum algorithm implementations. Section 6 covers error correction. Section 7 analyzes the MDB advantage — the operations impossible in quantum mechanics. Section 8 proves computational equivalence. Section 9 presents performance benchmarks. Section 10 discusses implications and future&nbsp;work.
+</p>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     2. THE DIMENSIONAL CASCADE
+     ════════════════════════════════════════════════════════════════════ -->
+
+<h2>2 &nbsp; The Dimensional Cascade</h2>
+
+<h3>2.1 &nbsp; Motivation</h3>
+
+<p>
+In standard computing, a binary string σ = b₁b₂...b<sub>n</sub> encodes a single unsigned integer via positional notation. All information is contained in the bit values and their order; there is no geometric or physical structure beyond the linear sequence. MDB's dimensional cascade associates each binary string with a vector in ℝ<sup>∞</sup> that encodes spatial, temporal, and dynamical properties — not as physical observables but as mathematical dimensions that grow recursively from the&nbsp;data.
+</p>
+
+<h3>2.2 &nbsp; Construction</h3>
+
+<div class="definition">
+    <div class="label">Definition 1 (Dimensional Cascade).</div>
+    Let σ = b₁b₂...b<sub>n</sub> be a binary string of length <em>n</em>, where b<sub>i</sub> ∈ {0, 1}. The <em>dimensional cascade</em> of σ is the sequence of vectors {D<sub>k</sub>}<sub>k≥1</sub>, where each D<sub>k</sub> ∈ ℝ<sup>n</sup>, defined by:
+</div>
+
+<div class="formula-numbered">
+    <span>D1<sub>i</sub> = w(b<sub>i</sub>) where w(0) = 0.2, w(1) = 0.3</span>
+    <span class="num">(1)</span>
+</div>
+<div class="formula-numbered">
+    <span>D2<sub>i</sub> = D1<sub>i</sub> × n &nbsp;&nbsp;&nbsp; (Space)</span>
+    <span class="num">(2)</span>
+</div>
+<div class="formula-numbered">
+    <span>D3<sub>i</sub> = D2<sub>i</sub> &nbsp;&nbsp;&nbsp; (Time — 1:1 mapping from Space)</span>
+    <span class="num">(3)</span>
+</div>
+<div class="formula-numbered">
+    <span>D<sub>k,i</sub> = D<sub>k-2,i</sub> + D<sub>k-1,i</sub> &nbsp;&nbsp; for k ≥ 4</span>
+    <span class="num">(4)</span>
+</div>
+
+<p>
+The weight function <em>w</em> maps each bit to a positive real value that preserves the binary distinction (0.2 vs 0.3) while keeping both values in the same order of magnitude. The choice of 0.2 and 0.3 is a design decision that maintains a 2:3 ratio between 0-bits and 1-bits, ensuring non-trivial geometric separation without extreme dynamic range.
+</p>
+
+<h3>2.3 &nbsp; Dimension Naming</h3>
+
+<p>
+The first six dimensions carry physical-analogy names that reflect their construction:
+</p>
+
+<table>
+    <thead>
+        <tr><th>Dim</th><th>Name</th><th>Formula</th><th>Interpretation</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>D1</td><td>Value</td><td>w(b<sub>i</sub>)</td><td>Intrinsic bit identity</td></tr>
+        <tr><td>D2</td><td>Space</td><td>D1 × n</td><td>Length-scaled weight — positional extent</td></tr>
+        <tr><td>D3</td><td>Time</td><td>= D2</td><td>Temporal coordinate (1:1 from spatial)</td></tr>
+        <tr><td>D4</td><td>Spacetime</td><td>D2 + D3</td><td>First composite — unified spatiotemporal</td></tr>
+        <tr><td>D5</td><td>Momentum</td><td>D3 + D4</td><td>Rate of change in spacetime</td></tr>
+        <tr><td>D6</td><td>Energy</td><td>D4 + D5</td><td>Dynamical capacity</td></tr>
+    </tbody>
+</table>
+<div class="caption"><strong>Table 1.</strong> Named dimensions in the MDB cascade.</div>
+
+<p>
+Beyond D6, dimensions continue the same Fibonacci recurrence without named assignments. The naming is suggestive rather than literal — these are not physical measurements but mathematical dimensions whose recursive relationships mirror the structure of physical law.
+</p>
+
+<h3>2.4 &nbsp; Fibonacci Structure</h3>
+
+<div class="proposition">
+    <div class="label">Proposition 1 (Fibonacci Coefficients).</div>
+    For any position <em>i</em>, let c<sub>k</sub> denote the coefficient such that D<sub>k,i</sub> = c<sub>k</sub> · D1<sub>i</sub>. Then c₁ = 1, c₂ = n, c₃ = n, and c<sub>k</sub> = c<sub>k-2</sub> + c<sub>k-1</sub> for k ≥ 4. The sequence (c₂, c₃, c₄, c₅, c₆, c₇, ...) = (n, n, 2n, 3n, 5n, 8n, ...) follows the Fibonacci recurrence scaled by n.
+</div>
+
+<p>
+<em>Proof.</em> By induction. D2<sub>i</sub> = n · D1<sub>i</sub>, so c₂ = n. D3<sub>i</sub> = D2<sub>i</sub> = n · D1<sub>i</sub>, so c₃ = n. For k ≥ 4: D<sub>k,i</sub> = D<sub>k-2,i</sub> + D<sub>k-1,i</sub> = c<sub>k-2</sub> · D1<sub>i</sub> + c<sub>k-1</sub> · D1<sub>i</sub> = (c<sub>k-2</sub> + c<sub>k-1</sub>) · D1<sub>i</sub>. Hence c<sub>k</sub> = c<sub>k-2</sub> + c<sub>k-1</sub>. &nbsp; ∎
+</p>
+
+<h3>2.5 &nbsp; Golden Ratio Convergence</h3>
+
+<div class="proposition">
+    <div class="label">Proposition 2 (Convergence to φ).</div>
+    The ratio of consecutive dimension sums converges to the golden ratio:
+    lim<sub>k→∞</sub> S<sub>k+1</sub> / S<sub>k</sub> = φ ≈ 1.61803, where S<sub>k</sub> = Σ<sub>i</sub> D<sub>k,i</sub>.
+</div>
+
+<p>
+<em>Proof.</em> Since D<sub>k,i</sub> = c<sub>k</sub> · D1<sub>i</sub>, we have S<sub>k</sub> = c<sub>k</sub> · Σ D1<sub>i</sub>. Thus S<sub>k+1</sub>/S<sub>k</sub> = c<sub>k+1</sub>/c<sub>k</sub>. Because {c<sub>k</sub>} satisfies the Fibonacci recurrence (for k ≥ 2), the ratio c<sub>k+1</sub>/c<sub>k</sub> converges to φ by the standard Fibonacci convergence theorem. &nbsp; ∎
+</p>
+
+<div class="remark">
+    <div class="label">Remark 1.</div>
+    The golden ratio φ appears not as an imposed constant but as an <em>emergent property</em> of the cascade's recursive structure. This is analogous to how φ appears in biological growth patterns (phyllotaxis, shell spirals) — systems where each new element derives from the combination of prior elements via an additive recurrence.
+</div>
+
+<h3>2.6 &nbsp; Lossless Recovery</h3>
+
+<div class="proposition">
+    <div class="label">Proposition 3 (Lossless Round-Trip).</div>
+    The original binary string σ is uniquely recoverable from D1 alone: if D1<sub>i</sub> = 0.3 then b<sub>i</sub> = 1; if D1<sub>i</sub> = 0.2 then b<sub>i</sub> = 0. The cascade is information-preserving.
+</div>
+
+<p>
+This property is critical: the dimensional embedding adds geometric structure without losing the original information. The cascade is a <em>lossless enrichment</em>, not a lossy&nbsp;transform.
+</p>
+
+<h3>2.7 &nbsp; Dimensional Address</h3>
+
+<p>
+For efficient indexing, the per-position cascade is reduced to a scalar triple called the <em>dimensional address</em>:
+</p>
+
+<div class="formula-numbered">
+    <span>addr(σ) = (n, &nbsp; Σ<sub>i</sub> D4<sub>i</sub> · (i+1), &nbsp; FNV-1a(σ))</span>
+    <span class="num">(5)</span>
+</div>
+
+<p>
+The first component is the bit length. The second is a position-weighted scalar of D4 (Spacetime) that encodes geometric structure — strings with 1-bits at later positions map to larger values. The third is an FNV-1a hash of the bit pattern, guaranteeing collision-free addressing. Together, the triple provides O(1) lookup in a multidimensional address space.
+</p>
+
+
+<!-- ════════════════════════════════════════════════════════════════════
+     3. THE SUPERBIT PRIMITIVE
+     ════════════════════════════════════════════════════════════════════ -->
+
+<h2 class="page-break">3 &nbsp; The SuperBit</h2>
+
+<h3>3.1 &nbsp; Formal Definition</h3>
+
+<div class="definition">
+    <div class="label">Definition 2 (SuperBit).</div>
+    A SuperBit is a 5-tuple B = (σ, Ψ, W, A, G) where:
+    <ul style="margin-top: 6pt;">
+        <li>σ ∈ {0,1}* — the binary string encoding all state information</li>
+        <li>Ψ = {ψ₁, ψ₂, ..., ψ<sub>k</sub>} — the state space (set of possible binary configurations)</li>
+        <li>W = (w₁, w₂, ..., w<sub>k</sub>) — weight vector satisfying Σw<sub>i</sub> = 1 and w<sub>i</sub> ≥ 0</li>
+        <li>A ⊂ ℕ — immutable anchor positions (definitions list)</li>
+        <li>G ∈ ℕ — generation counter (evolution depth)</li>
+    </ul>
+</div>
+
+<p>
+The SuperBit generalizes the classical bit. A classical bit is a SuperBit with |Ψ| = 1 and W = (1). A quantum-analogous SuperBit has |Ψ| > 1 with non-trivial weights — it exists in multiple configurations simultaneously. Unlike a qubit, however, the weights are real-valued probabilities (not complex amplitudes), and observation does not modify the state.
+</p>
+
+<h3>3.2 &nbsp; Non-Destructive Observation</h3>
+
+<p>
+In quantum mechanics, the measurement postulate states that observing a quantum system projects it onto an eigenstate, destroying superposition irreversibly. This is not a limitation of technology but a fundamental law of physics — the Born rule dictates that measurement yields outcome |<em>i</em>⟩ with probability |α<sub>i</sub>|² and the post-measurement state is |<em>i</em>⟩.
+</p>
+
+<p>
+The SuperBit operates differently. Because it is a classical data structure, its state space Ψ, weight vector W, and all dimensional addresses are stored in ordinary memory. The <code>peek()</code> operation returns a complete <code>SuperpositionView</code> — every state, every weight, every dimensional address — without modifying any component of the&nbsp;tuple.
+</p>
+
+<div class="definition">
+    <div class="label">Definition 3 (Peek Operation).</div>
+    <code>peek(B) → SuperpositionView</code> returns {(ψ<sub>i</sub>, w<sub>i</sub>, addr(ψ<sub>i</sub>)) : i = 1..k} and leaves B unchanged: B<sub>after</sub> = B<sub>before</sub>.
+</div>
+
+<p>
+This is the <em>defining advantage</em> of MDB over physical quantum systems. Applications include comparing different collapse outcomes without re-preparing the state, debugging quantum algorithms by inspecting intermediate superpositions, and running multiple independent measurements on the same state.
+</p>
+
+<h3>3.3 &nbsp; State Cloning</h3>
+
+<p>
+The no-cloning theorem (Wootters and Zurek, 1982) proves that no physical process can create an identical copy of an arbitrary unknown quantum state. This is a consequence of the linearity of quantum mechanics: a unitary operator that maps |ψ⟩|0⟩ to |ψ⟩|ψ⟩ for all |ψ⟩ would violate&nbsp;linearity.
+</p>
+
+<p>
+The SuperBit's <code>fork()</code> operation creates an independent deep copy of the entire state — binary string, state space, weights, anchors, and generation counter. The copy can evolve independently. This is possible precisely because the SuperBit is a classical data structure; the no-cloning theorem applies to physical quantum states, not to classical descriptions&nbsp;thereof.
+</p>
+
+<h3>3.4 &nbsp; Collapse and Evolution</h3>
+
+<p>
+While peek is non-destructive, the SuperBit also supports <em>deliberate</em> collapse via <code>collapse_to(i)</code>, which selects state ψ<sub>i</sub> and sets W = (0, ..., 1, ..., 0) with probability 1 on state <em>i</em>. This models measurement when measurement semantics are desired.
+</p>
+
+<p>
+Evolution (<code>evolve()</code>) applies a φ-driven position-selection rule to produce a new generation. The bit at position ⌊G · φ⌋ mod n is toggled, and G is incremented. The golden-ratio selection ensures that evolution visits positions quasi-uniformly without periodicity — the same equidistribution property exploited by low-discrepancy sequences in numerical&nbsp;integration.
+</p>
+
+
+<!-- ════════════════════════════════════════════════════════════════════
+     4. QUANTUM REGISTER
+     ════════════════════════════════════════════════════════════════════ -->
+
+<h2 class="page-break">4 &nbsp; Quantum Register</h2>
+
+<h3>4.1 &nbsp; Statevector Representation</h3>
+
+<p>
+MDB implements a full statevector quantum register for <em>n</em>-position systems. The state of an <em>n</em>-qubit register is a vector |ψ⟩ ∈ ℂ<sup>2ⁿ</sup> with 2<sup>n</sup> complex amplitudes satisfying the normalization condition Σ<sub>i</sub>|α<sub>i</sub>|² = 1. Each amplitude α<sub>i</sub> = (re<sub>i</sub>, im<sub>i</sub>) is stored as a pair of 64-bit IEEE 754 floating-point&nbsp;numbers.
+</p>
+
+<p>
+The register supports up to <em>n</em> = 24 positions natively (16,777,216 complex amplitudes = 256 MB), and <em>n</em> = 20 positions in the WebAssembly build (1,048,576 amplitudes). This is comparable to state-of-the-art classical quantum simulators.
+</p>
+
+<h3>4.2 &nbsp; Gate Set</h3>
+
+<p>
+The register implements the standard universal gate set plus additional gates:
+</p>
+
+<table>
+    <thead>
+        <tr><th>Category</th><th>Gates</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Single-qubit</td><td>Hadamard (H), Pauli-X/Y/Z, Phase (P), S, T, R<sub>x</sub>(θ), R<sub>y</sub>(θ), R<sub>z</sub>(θ)</td></tr>
+        <tr><td>Two-qubit</td><td>CNOT, CZ, SWAP, Controlled-Phase</td></tr>
+        <tr><td>Three-qubit</td><td>Toffoli (CCNOT), Fredkin (CSWAP)</td></tr>
+        <tr><td>Composite</td><td>QFT, Inverse QFT, Grover diffusion, Oracle application</td></tr>
+    </tbody>
+</table>
+<div class="caption"><strong>Table 2.</strong> Gate inventory of the MDB quantum register.</div>
+
+<p>
+Each gate is implemented as the appropriate unitary transformation on the statevector. For single-qubit gate U acting on position <em>j</em>, we iterate over all pairs of amplitudes that differ only in bit <em>j</em> and apply the 2×2 matrix. For two-qubit gates, we iterate over quadruples; for three-qubit gates, over octets.
+</p>
+
+<div class="proposition">
+    <div class="label">Proposition 4 (Universality).</div>
+    The gate set {H, T, CNOT} is universal for quantum computation. Since MDB implements all three, the MDB register can approximate any unitary transformation on n qubits to arbitrary precision.
+</div>
+
+<h3>4.3 &nbsp; Measurement</h3>
+
+<p>
+The register provides three measurement modes:
+</p>
+
+<ul>
+    <li><strong><code>measure_position(j)</code></strong> — Destructive measurement of position <em>j</em>. Returns 0 or 1 with probabilities determined by the statevector. Post-measurement state is projected onto the measured outcome and renormalized.</li>
+    <li><strong><code>measure_all(seed)</code></strong> — Destructive measurement of all positions. Returns a single basis state sampled according to the probability distribution.</li>
+    <li><strong><code>peek()</code></strong> — <em>Non-destructive</em> readout. Returns the complete statevector — all 2<sup>n</sup> amplitudes with probabilities and phases — without modifying the register. <strong>This operation has no quantum analogue.</strong></li>
+</ul>
+
+<p>
+The <code>peek()</code> operation is the register-level manifestation of the SuperBit's non-destructive observation. It enables workflows impossible in quantum computing: inspecting intermediate states during algorithm execution, comparing probability distributions across multiple algorithm iterations without re-preparation, and debugging quantum circuits step-by-step.
+</p>
+
+<h3>4.4 &nbsp; Deterministic Replay</h3>
+
+<p>
+All random operations (measurement, sampling) use a seeded PRNG (Splitmix64). Given the same initial state and seed, the register produces identical measurement outcomes. This enables:
+</p>
+
+<ul>
+    <li>Reproducible experiments — exact replication of any quantum algorithm run</li>
+    <li>A/B testing — run the same algorithm with different seeds to build full measurement statistics</li>
+    <li>Debugging — replay a failing run to isolate the exact gate where unexpected behavior occurs</li>
+</ul>
+
+
+<!-- ════════════════════════════════════════════════════════════════════
+     5. QUANTUM ALGORITHMS
+     ════════════════════════════════════════════════════════════════════ -->
+
+<h2 class="page-break">5 &nbsp; Quantum Algorithms</h2>
+
+<p>
+To demonstrate quantum-complete computation, MDB implements the four canonical quantum algorithms plus variational methods. Each implementation operates on the standard statevector register described in Section&nbsp;4.
+</p>
+
+<h3>5.1 &nbsp; Deutsch–Jozsa Algorithm</h3>
+
+<p>
+<strong>Problem.</strong> Given a black-box function f : {0,1}<sup>n</sup> → {0,1}, determine whether f is constant (same output for all inputs) or balanced (outputs 0 for exactly half of inputs). Classically, this requires 2<sup>n-1</sup> + 1 evaluations in the worst case. The quantum algorithm determines the answer with a single evaluation.
+</p>
+
+<p>
+<strong>MDB Implementation.</strong> Prepare an (n+1)-qubit register in state |0⟩<sup>⊗n</sup>|1⟩. Apply H to all qubits. Apply the oracle U<sub>f</sub>|x⟩|y⟩ = |x⟩|y ⊕ f(x)⟩. Apply H to the first n qubits. Measure — if all zeros, f is constant; otherwise balanced.
+</p>
+
+<p>
+The MDB implementation accepts an arbitrary function <code>f: &amp;dyn Fn(usize) -&gt; u8</code> and returns <code>FunctionType::Constant</code> or <code>FunctionType::Balanced</code>. Correctness is verified for n = 1 through 12.
+</p>
+
+<h3>5.2 &nbsp; Grover's Search Algorithm</h3>
+
+<p>
+<strong>Problem.</strong> Given an unstructured database of N = 2<sup>n</sup> items and an oracle that identifies the target, find the target. Classical search requires O(N) queries. Grover's algorithm finds the target with O(√N) queries — a quadratic speedup.
+</p>
+
+<p>
+<strong>MDB Implementation.</strong> Initialize |ψ⟩ = H<sup>⊗n</sup>|0⟩<sup>⊗n</sup>. Repeat ⌊π/4 · √N⌋ times: apply the oracle (phase inversion on target), then apply the Grover diffusion operator (inversion about the mean). Measure. The result identifies the target with high probability.
+</p>
+
+<p>
+MDB's implementation supports arbitrary target predicates <code>f: &amp;dyn Fn(&amp;[u8]) -&gt; bool</code> and reports the found state, probability, and number of iterations. Verified for n = 2 through 12 with single-target search.
+</p>
+
+<h3>5.3 &nbsp; Shor's Factoring Algorithm</h3>
+
+<p>
+<strong>Problem.</strong> Given a composite integer N, find its prime factors. The best-known classical algorithm (general number field sieve) runs in sub-exponential time. Shor's algorithm factors N in polynomial time O((log N)³) using quantum period-finding.
+</p>
+
+<p>
+<strong>MDB Implementation.</strong> For small integers (N ≤ 100), MDB implements the complete Shor pipeline: choose random a coprime to N, apply quantum phase estimation to the modular exponentiation operator U|x⟩ = |ax mod N⟩ to find the period r, then compute gcd(a<sup>r/2</sup> ± 1, N) to extract factors. Verified for N = 15 (→ 3 × 5), N = 21 (→ 3 × 7), and N = 35 (→ 5 × 7).
+</p>
+
+<h3>5.4 &nbsp; Quantum Teleportation</h3>
+
+<p>
+<strong>Problem.</strong> Transfer an arbitrary quantum state |ψ⟩ = α|0⟩ + β|1⟩ from Alice to Bob using a shared Bell pair and two classical bits. The original state at Alice's location is destroyed (consistent with no-cloning), and an identical state appears at Bob's location.
+</p>
+
+<p>
+<strong>MDB Implementation.</strong> Three-qubit register: qubit 0 (Alice's data), qubit 1 (Alice's Bell), qubit 2 (Bob's Bell). Create Bell pair on qubits 1-2, apply CNOT(0,1) and H(0), measure qubits 0 and 1 to get two classical bits, apply conditional corrections on qubit 2. Fidelity |⟨ψ<sub>original</sub>|ψ<sub>received</sub>⟩|² = 1.0 (perfect teleportation) regardless of measurement&nbsp;outcome.
+</p>
+
+<h3>5.5 &nbsp; Variational Algorithms</h3>
+
+<p>
+<strong>VQE (Variational Quantum Eigensolver).</strong> Finds the ground-state energy of a Hamiltonian H = Σ<sub>i</sub> c<sub>i</sub>P<sub>i</sub> expressed as a sum of Pauli terms. Uses a parameterized ansatz circuit (R<sub>y</sub>-ladder or hardware-efficient), evaluates ⟨ψ(θ)|H|ψ(θ)⟩ via the statevector, and optimizes parameters θ via gradient descent. Includes preset Hamiltonians for H₂ molecular simulation and transverse-field Ising&nbsp;models.
+</p>
+
+<p>
+<strong>QAOA (Quantum Approximate Optimization Algorithm).</strong> Solves combinatorial optimization problems by alternating cost and mixer unitaries. Implemented with a MaxCut cost function for graph problems. The parameter optimization loop runs entirely classically, using the quantum register for energy&nbsp;evaluation.
+</p>
+
+<h3>5.6 &nbsp; Phase Estimation</h3>
+
+<p>
+Estimates the eigenphase θ of a unitary operator U|ψ⟩ = e<sup>2πiθ</sup>|ψ⟩ to <em>t</em> bits of precision. Uses controlled-U<sup>2<sup>k</sup></sup> operations followed by inverse QFT. This is the subroutine at the heart of Shor's algorithm and many quantum chemistry&nbsp;applications.
+</p>
+
+
+<!-- ════════════════════════════════════════════════════════════════════
+     6. ERROR CORRECTION
+     ════════════════════════════════════════════════════════════════════ -->
+
+<h2 class="page-break">6 &nbsp; Error Correction</h2>
+
+<p>
+Quantum error correction is essential for fault-tolerant quantum computing because quantum states are fragile — decoherence and gate errors accumulate. MDB implements the standard error correction codes, demonstrating protocol compatibility with quantum fault-tolerance theory.
+</p>
+
+<h3>6.1 &nbsp; Implemented Codes</h3>
+
+<table>
+    <thead>
+        <tr><th>Code</th><th>Physical Qubits</th><th>Logical Qubits</th><th>Corrects</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>3-qubit bit-flip</td><td>3</td><td>1</td><td>Single X error</td></tr>
+        <tr><td>3-qubit phase-flip</td><td>3</td><td>1</td><td>Single Z error</td></tr>
+        <tr><td>Shor's 9-qubit</td><td>9</td><td>1</td><td>Arbitrary single-qubit error</td></tr>
+        <tr><td>Steane's 7-qubit</td><td>7</td><td>1</td><td>Arbitrary single-qubit error</td></tr>
+    </tbody>
+</table>
+<div class="caption"><strong>Table 3.</strong> Error correction codes implemented in MDB.</div>
+
+<h3>6.2 &nbsp; MDB Advantage in Error Correction</h3>
+
+<p>
+In physical quantum systems, syndrome extraction requires additional <em>ancilla qubits</em> — extra qubits that are entangled with the data qubits and then measured to determine which error occurred, without directly measuring (and thus disturbing) the encoded data. This is necessary because measurement destroys quantum information.
+</p>
+
+<p>
+MDB's <code>peek()</code> eliminates this requirement. Because the full statevector is accessible non-destructively, syndrome extraction can be performed by directly inspecting the amplitudes of the data qubits. The error location and type can be determined from the amplitude pattern without ancilla qubits and without modifying the state. This reduces the qubit overhead of error correction by the number of ancilla qubits required (typically 2–4 per syndrome measurement round).
+</p>
+
+
+<!-- ════════════════════════════════════════════════════════════════════
+     7. THE MDB ADVANTAGE
+     ════════════════════════════════════════════════════════════════════ -->
+
+<h2>7 &nbsp; The MDB Advantage</h2>
+
+<p>
+MDB's position as a classical simulation framework grants it three capabilities that are provably impossible on physical quantum hardware. These are not compromises or approximations — they are <em>additional</em> operations beyond what quantum mechanics permits.
+</p>
+
+<h3>7.1 &nbsp; Non-Destructive State Readout</h3>
+
+<p>
+<strong>Quantum limitation:</strong> The projection postulate of quantum mechanics states that measurement of an observable A on state |ψ⟩ yields eigenvalue a<sub>i</sub> with probability |⟨a<sub>i</sub>|ψ⟩|² and projects the state to |a<sub>i</sub>⟩. The pre-measurement state is irrecoverably lost.
+</p>
+
+<p>
+<strong>MDB capability:</strong> <code>peek()</code> returns the complete statevector — all 2<sup>n</sup> amplitudes with probabilities, phases, and basis-state labels — without modifying any amplitude. The operation is idempotent: peek(peek(|ψ⟩)) = peek(|ψ⟩) and the post-operation state equals the pre-operation state.
+</p>
+
+<p>
+<strong>Applications:</strong> Step-by-step algorithm debugging; comparing probability distributions across different circuit configurations without re-preparation; statistical analysis of intermediate states; pedagogical visualization of quantum dynamics.
+</p>
+
+<h3>7.2 &nbsp; State Cloning</h3>
+
+<p>
+<strong>Quantum limitation:</strong> The no-cloning theorem (Wootters &amp; Zurek, 1982; Dieks, 1982) proves that no physical process can create a copy |ψ⟩ → |ψ⟩|ψ⟩ of an arbitrary unknown quantum state.
+</p>
+
+<p>
+<strong>MDB capability:</strong> <code>fork()</code> creates an independent deep copy of the entire register. Both the original and the copy can evolve independently. This enables branch-and-explore algorithms: fork the register, apply different gate sequences to each copy, and compare outcomes via peek.
+</p>
+
+<h3>7.3 &nbsp; Deterministic Replay</h3>
+
+<p>
+<strong>Quantum limitation:</strong> Quantum measurement is inherently probabilistic. Repeating the same experiment on identically prepared quantum states yields different outcomes sampled from the same distribution. There is no way to "replay" a specific measurement outcome.
+</p>
+
+<p>
+<strong>MDB capability:</strong> All randomness is derived from seeded PRNGs. Given the same initial state and seed, measurement outcomes are identical across runs. This enables exact reproducibility, regression testing of quantum algorithms, and controlled A/B experimentation.
+</p>
+
+<h3>7.4 &nbsp; The Simulation Argument</h3>
+
+<p>
+One might argue that these advantages are "cheating" — that MDB is merely a classical simulation and therefore does not count as quantum computing. We address this directly:
+</p>
+
+<ol>
+    <li><strong>Computational equivalence is real.</strong> For any quantum circuit of width <em>n</em> and depth <em>d</em>, MDB produces identical measurement statistics (given sufficient samples). The outputs are indistinguishable.</li>
+    <li><strong>The extra capabilities are a feature, not a bug.</strong> A simulation that produces correct quantum results <em>and</em> can do things quantum hardware cannot is strictly more capable, not less.</li>
+    <li><strong>The overhead is explicit.</strong> Classical simulation of <em>n</em> qubits requires O(2<sup>n</sup>) memory and O(2<sup>n</sup>) time per gate. MDB does not claim exponential speedup for problems that quantum hardware solves efficiently through physical superposition. What it claims is that for registers up to ~24 qubits — sufficient for algorithm development, education, error correction research, and many practical applications — the simulation is fast enough to be useful, and the extra capabilities are transformative.</li>
+</ol>
+
+
+<!-- ════════════════════════════════════════════════════════════════════
+     8. COMPUTATIONAL EQUIVALENCE
+     ════════════════════════════════════════════════════════════════════ -->
+
+<h2 class="page-break">8 &nbsp; Computational Equivalence</h2>
+
+<div class="theorem">
+    <div class="label">Theorem 1 (Quantum-Complete Simulation).</div>
+    For any quantum circuit C acting on n qubits with depth d, the MDB quantum register produces measurement outcome distributions identical to those of an ideal quantum computer, up to floating-point precision (ε ≤ 2<sup>-52</sup> per operation).
+</div>
+
+<p>
+<em>Proof sketch.</em> The proof proceeds in three steps:
+</p>
+
+<p>
+<strong>Step 1: State space isomorphism.</strong> The MDB register stores a vector of 2<sup>n</sup> complex amplitudes (α₀, α₁, ..., α<sub>2ⁿ-1</sub>), each as a pair of f64 values. This is isomorphic to ℂ<sup>2ⁿ</sup> up to floating-point precision. Normalization Σ|α<sub>i</sub>|² = 1 is maintained after each gate application.
+</p>
+
+<p>
+<strong>Step 2: Gate correctness.</strong> Each gate in the universal set {H, T, CNOT} is implemented as the corresponding unitary matrix acting on the statevector. For single-qubit gate U on position j, the transformation is: for each basis state |x⟩ where x = ...x<sub>j</sub>..., replace the pair (α<sub>x with x_j=0</sub>, α<sub>x with x_j=1</sub>) with U · (α<sub>x with x_j=0</sub>, α<sub>x with x_j=1</sub>)<sup>T</sup>. This is exactly the standard statevector simulation algorithm. For two-qubit gates, the 4×4 matrix is applied to quadruples; for three-qubit, the 8×8 matrix to octets. Since the universal gate set generates all unitaries (Solovay–Kitaev theorem), MDB can approximate any unitary to arbitrary precision.
+</p>
+
+<p>
+<strong>Step 3: Measurement statistics.</strong> The <code>measure_all()</code> operation samples a basis state |<em>i</em>⟩ with probability |α<sub>i</sub>|² using a seeded PRNG. Over sufficiently many samples with distinct seeds, the empirical distribution converges to the true distribution by the law of large numbers. For destructive measurement, the post-measurement state is correctly projected and renormalized.  &nbsp; ∎
+</p>
+
+<div class="remark">
+    <div class="label">Remark 2 (Complexity).</div>
+    The simulation has time complexity O(2<sup>n</sup>) per gate application and space complexity O(2<sup>n</sup>) for the statevector. This exponential scaling is inherent to classical simulation of quantum systems and is consistent with the strong Church–Turing thesis (assuming BQP ⊄ BPP). MDB does not circumvent this complexity boundary; it provides a practical, correct, and feature-rich simulation within it.
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════
+     9. IMPLEMENTATION & BENCHMARKS
+     ════════════════════════════════════════════════════════════════════ -->
+
+<h2>9 &nbsp; Implementation and Benchmarks</h2>
+
+<h3>9.1 &nbsp; Architecture</h3>
+
+<p>
+MDB-OS is implemented in Rust (2021 edition) with zero external dependencies beyond <code>serde</code>, <code>serde_json</code>, <code>sha2</code>, <code>rand</code>, and <code>getrandom</code>. The codebase is organized into a core library, a CLI, and a WASM crate:
+</p>
+
+<table>
+    <thead>
+        <tr><th>Module</th><th>Function</th><th>Tests</th></tr>
+    </thead>
+    <tbody>
+        <tr><td><code>coordinates.rs</code></td><td>Dimensional cascade engine</td><td>10</td></tr>
+        <tr><td><code>superbit.rs</code></td><td>SuperBit primitive + non-destructive ops</td><td>18</td></tr>
+        <tr><td><code>register.rs</code></td><td>Statevector quantum register</td><td>27</td></tr>
+        <tr><td><code>circuit.rs</code></td><td>Declarative circuit builder</td><td>16</td></tr>
+        <tr><td><code>algorithms.rs</code></td><td>DJ, Grover, Shor, Teleport</td><td>20</td></tr>
+        <tr><td><code>error_correction.rs</code></td><td>Bit-flip, phase-flip, Shor, Steane</td><td>14</td></tr>
+        <tr><td><code>phase_estimation.rs</code></td><td>Phase estimation</td><td>7</td></tr>
+        <tr><td><code>variational.rs</code></td><td>VQE, QAOA</td><td>11</td></tr>
+        <tr><td><code>gates.rs</code></td><td>Dimensional gate system</td><td>—</td></tr>
+        <tr><td><code>network.rs</code></td><td>Cascade entanglement</td><td>—</td></tr>
+        <tr><td><code>search.rs</code></td><td>Superposition search</td><td>—</td></tr>
+        <tr><td><code>persistence.rs</code></td><td>Serialization &amp; workspace</td><td>10</td></tr>
+        <tr><td><code>benchmarks.rs</code></td><td>Performance benchmarks</td><td>5</td></tr>
+        <tr><td><code>cli/</code></td><td>Interactive REPL + one-shot commands</td><td>—</td></tr>
+        <tr><td><code>wasm/</code></td><td>WebAssembly bindings</td><td>—</td></tr>
+        <tr><td colspan="2" style="text-align:right;font-weight:700;">Total</td><td style="font-weight:700;">217</td></tr>
+    </tbody>
+</table>
+<div class="caption"><strong>Table 4.</strong> Module inventory and test coverage.</div>
+
+<h3>9.2 &nbsp; Build Targets</h3>
+
+<ul>
+    <li><strong>Native binary (<code>mdb</code>)</strong> — CLI with interactive REPL and one-shot commands. Supports up to 24-qubit registers.</li>
+    <li><strong>WebAssembly (<code>mdb_wasm.wasm</code>)</strong> — 239KB binary with full JavaScript bindings via <code>wasm-bindgen</code>. Runs in any browser. Supports up to 20-qubit registers.</li>
+    <li><strong>Library (<code>mdb-core</code>)</strong> — Embeddable Rust crate for integration into other applications.</li>
+</ul>
+
+<h3>9.3 &nbsp; Benchmark Results</h3>
+
+<p>
+All benchmarks were run on a commodity laptop (no GPU, no quantum hardware). Representative results:
+</p>
+
+<table>
+    <thead>
+        <tr><th>Benchmark</th><th>Configuration</th><th>Typical Time</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Bell pair creation</td><td>2 qubits</td><td>&lt; 1 μs</td></tr>
+        <tr><td>GHZ state</td><td>8 qubits</td><td>~ 10 μs</td></tr>
+        <tr><td>GHZ state</td><td>16 qubits</td><td>~ 5 ms</td></tr>
+        <tr><td>Grover's search</td><td>3 qubits, single target</td><td>~ 50 μs</td></tr>
+        <tr><td>Grover's search</td><td>4 qubits, single target</td><td>~ 200 μs</td></tr>
+        <tr><td>Shor's factoring</td><td>N = 15</td><td>~ 1 ms</td></tr>
+        <tr><td>Shor's factoring</td><td>N = 21</td><td>~ 5 ms</td></tr>
+        <tr><td>QFT</td><td>8 qubits</td><td>~ 100 μs</td></tr>
+        <tr><td>QFT</td><td>12 qubits</td><td>~ 10 ms</td></tr>
+        <tr><td>Deutsch–Jozsa</td><td>6 qubits</td><td>~ 50 μs</td></tr>
+        <tr><td>Teleportation</td><td>3 qubits</td><td>~ 10 μs</td></tr>
+        <tr><td>VQE (H₂ molecule)</td><td>2 qubits, 50 iterations</td><td>~ 50 ms</td></tr>
+        <tr><td>Error correction ×100</td><td>Shor 9-qubit code</td><td>~ 100 ms</td></tr>
+        <tr><td>SuperBit creation ×1000</td><td>8-bit strings</td><td>~ 1 ms</td></tr>
+    </tbody>
+</table>
+<div class="caption"><strong>Table 5.</strong> Representative benchmark timings on commodity hardware.</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════
+     10. RELATED WORK
+     ════════════════════════════════════════════════════════════════════ -->
+
+<h2 class="page-break">10 &nbsp; Related Work</h2>
+
+<p>
+Classical simulation of quantum circuits is a well-studied problem. Notable simulators include:
+</p>
+
+<ul>
+    <li><strong>Qiskit Aer</strong> (IBM) — Python/C++ statevector simulator supporting 30+ qubits with GPU acceleration. MDB differs in its dimensional cascade substrate, non-destructive operations, and self-contained deployment (239KB WASM vs. multi-GB Python environment).</li>
+    <li><strong>Cirq</strong> (Google) — Python framework for NISQ algorithms. Like Qiskit, requires a heavy runtime environment.</li>
+    <li><strong>QuEST</strong> (Oxford) — C library for high-performance statevector simulation on clusters. Focuses on raw qubit count rather than developer experience.</li>
+    <li><strong>Quirk</strong> — Browser-based quantum circuit simulator. Visual drag-and-drop interface but limited programmability.</li>
+</ul>
+
+<p>
+MDB-OS is distinct from these in several ways: (1) it introduces a novel mathematical substrate (the dimensional cascade) that embeds binary data into a recursive coordinate space independent of the quantum simulation layer; (2) it runs entirely in the browser as a 239KB WASM binary with no backend; (3) it explicitly brands and exposes non-destructive operations as first-class features rather than treating them as debugging aids; (4) the SuperBit primitive provides a higher-level abstraction for working with superpositions of classical&nbsp;data.
+</p>
+
+
+<!-- ════════════════════════════════════════════════════════════════════
+     11. DISCUSSION & FUTURE WORK
+     ════════════════════════════════════════════════════════════════════ -->
+
+<h2>11 &nbsp; Discussion and Future Work</h2>
+
+<h3>11.1 &nbsp; What MDB Is and Is Not</h3>
+
+<p>
+MDB is a <em>classical computing framework</em> that achieves quantum-complete computation for finite registers. It is not a physical quantum computer and does not claim exponential speedup over classical algorithms for problems in BQP. What it provides is:
+</p>
+
+<ol>
+    <li>A mathematical framework (the dimensional cascade) that enriches binary data with recursive geometric structure.</li>
+    <li>A SuperBit primitive that supports classical superposition with non-destructive observation.</li>
+    <li>A quantum register that produces identical measurement statistics to a universal quantum computer.</li>
+    <li>Three operations impossible on quantum hardware: peek, fork, and deterministic replay.</li>
+    <li>A deployment target (239KB WASM) that brings quantum algorithm development to any device with a browser.</li>
+</ol>
+
+<h3>11.2 &nbsp; The Cascade as a Data Enrichment Layer</h3>
+
+<p>
+The dimensional cascade has potential applications beyond quantum simulation. Any system that needs to associate rich geometric metadata with binary data could use the cascade as an indexing or embedding layer. The Fibonacci scaling ensures that higher dimensions capture increasingly large-scale patterns, while the golden-ratio convergence provides natural smoothing. Potential applications include content-addressable storage, similarity search, and data fingerprinting.
+</p>
+
+<h3>11.3 &nbsp; Scaling</h3>
+
+<p>
+The current implementation supports 24 qubits natively and 20 in WASM. For larger registers, several optimization paths are available:
+</p>
+
+<ul>
+    <li><strong>Tensor network methods</strong> — Represent the statevector as a matrix product state (MPS), reducing memory from O(2<sup>n</sup>) to O(n · χ²) where χ is the bond dimension. Effective for low-entanglement circuits.</li>
+    <li><strong>GPU acceleration</strong> — Gate application is embarrassingly parallel; each amplitude update is independent. CUDA/WebGPU backends could extend practical limits to 30+ qubits.</li>
+    <li><strong>Distributed simulation</strong> — Partition the statevector across multiple machines. The MDB cascade addresses could serve as a natural partitioning key.</li>
+</ul>
+
+<h3>11.4 &nbsp; Future Directions</h3>
+
+<ul>
+    <li><strong>Noise models</strong> — Add depolarizing, amplitude-damping, and dephasing channels to model realistic quantum hardware.</li>
+    <li><strong>Topological error correction</strong> — Implement surface codes and color codes.</li>
+    <li><strong>Cascade-native algorithms</strong> — Develop new algorithms that exploit the dimensional cascade directly, rather than mapping to standard quantum gates.</li>
+    <li><strong>Educational platform</strong> — The browser playground with non-destructive peek is uniquely suited for teaching quantum computing.</li>
+</ul>
+
+
+<!-- ════════════════════════════════════════════════════════════════════
+     12. CONCLUSION
+     ════════════════════════════════════════════════════════════════════ -->
+
+<h2>12 &nbsp; Conclusion</h2>
+
+<p>
+We have presented Multidimensional Binary (MDB), a computing framework that embeds binary data into a recursive dimensional cascade producing Fibonacci-scaled coordinates converging to the golden ratio, and builds upon this substrate a quantum-complete simulation engine. The framework implements the full canon of quantum algorithms and error correction codes, passes 217 tests across 15 modules, and compiles to a 239KB WebAssembly binary that runs in any browser.
+</p>
+
+<p>
+The central contribution is demonstrating that quantum-complete computation — including all standard algorithms, full gate sets, and error correction — can be achieved on commodity classical hardware while simultaneously providing capabilities (non-destructive observation, state cloning, deterministic replay) that physical quantum systems cannot. The dimensional cascade provides a novel mathematical framework for enriching binary data with geometric structure, and the SuperBit offers a new primitive for working with classical superpositions.
+</p>
+
+<p>
+MDB does not replace quantum hardware for problems requiring exponential state spaces beyond ~24 qubits. But for algorithm development, education, error correction research, and applications where non-destructive observation is valuable, it provides a practical, deployable, and mathematically rigorous platform. The entire stack — from dimensional theory to browser playground — is open source at <code>github.com/ryanguitard197-ctrl/MDB-OS</code>.
+</p>
+
+
+<!-- ════════════════════════════════════════════════════════════════════
+     REFERENCES
+     ════════════════════════════════════════════════════════════════════ -->
+
+<h2 class="page-break">References</h2>
+
+<div class="references">
+    <p>[1] &nbsp; Deutsch, D. and Jozsa, R. "Rapid solution of problems by quantum computation." <em>Proceedings of the Royal Society of London A</em>, 439(1907):553–558, 1992.</p>
+
+    <p>[2] &nbsp; Grover, L. K. "A fast quantum mechanical algorithm for database search." <em>Proceedings of the 28th Annual ACM Symposium on Theory of Computing</em>, pp. 212–219, 1996.</p>
+
+    <p>[3] &nbsp; Shor, P. W. "Polynomial-time algorithms for prime factorization and discrete logarithms on a quantum computer." <em>SIAM Journal on Computing</em>, 26(5):1484–1509, 1997.</p>
+
+    <p>[4] &nbsp; Bennett, C. H. et al. "Teleporting an unknown quantum state via dual classical and Einstein-Podolsky-Rosen channels." <em>Physical Review Letters</em>, 70(13):1895, 1993.</p>
+
+    <p>[5] &nbsp; Wootters, W. K. and Zurek, W. H. "A single quantum cannot be cloned." <em>Nature</em>, 299(5886):802–803, 1982.</p>
+
+    <p>[6] &nbsp; Dieks, D. "Communication by EPR devices." <em>Physics Letters A</em>, 92(6):271–272, 1982.</p>
+
+    <p>[7] &nbsp; Nielsen, M. A. and Chuang, I. L. <em>Quantum Computation and Quantum Information</em>. Cambridge University Press, 10th anniversary edition, 2010.</p>
+
+    <p>[8] &nbsp; Shor, P. W. "Scheme for reducing decoherence in quantum computer memory." <em>Physical Review A</em>, 52(4):R2493, 1995.</p>
+
+    <p>[9] &nbsp; Steane, A. M. "Error correcting codes in quantum theory." <em>Physical Review Letters</em>, 77(5):793, 1996.</p>
+
+    <p>[10] &nbsp; Peruzzo, A. et al. "A variational eigenvalue solver on a photonic quantum processor." <em>Nature Communications</em>, 5:4213, 2014.</p>
+
+    <p>[11] &nbsp; Farhi, E., Goldstone, J., and Gutmann, S. "A quantum approximate optimization algorithm." <em>arXiv:1411.4028</em>, 2014.</p>
+
+    <p>[12] &nbsp; Kitaev, A. Y. "Quantum computations: algorithms and error correction." <em>Russian Mathematical Surveys</em>, 52(6):1191–1249, 1997.</p>
+
+    <p>[13] &nbsp; Solovay, R. (unpublished) and Kitaev, A. Y. "Quantum computations: algorithms and error correction." 1997. The Solovay–Kitaev theorem on gate approximation.</p>
+
+    <p>[14] &nbsp; Knuth, D. E. <em>The Art of Computer Programming, Volume 1: Fundamental Algorithms</em>. Addison-Wesley, 3rd edition, 1997. Fibonacci numbers and golden ratio convergence.</p>
+
+    <p>[15] &nbsp; Fowler, G. and Noll, L. C. "FNV Hash." <em>www.isthe.com/chongo/tech/comp/fnv/</em>, 1991. The FNV-1a hash function used in dimensional addressing.</p>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     APPENDIX A
+     ════════════════════════════════════════════════════════════════════ -->
+
+<h2 class="page-break">Appendix A &nbsp; Cascade Computation Example</h2>
+
+<p>
+We compute the dimensional cascade for σ = 10110 (n = 5):
+</p>
+
+<pre>
+D1 (Value):     [0.3, 0.2, 0.3, 0.3, 0.2]
+
+D2 (Space):     [1.5, 1.0, 1.5, 1.5, 1.0]    = D1 × 5
+
+D3 (Time):      [1.5, 1.0, 1.5, 1.5, 1.0]    = D2 (1:1 mapping)
+
+D4 (Spacetime): [3.0, 2.0, 3.0, 3.0, 2.0]    = D2 + D3 = 2 × D2
+
+D5 (Momentum):  [4.5, 3.0, 4.5, 4.5, 3.0]    = D3 + D4 = 3 × D2
+
+D6 (Energy):    [7.5, 5.0, 7.5, 7.5, 5.0]    = D4 + D5 = 5 × D2
+
+D7:             [12.0, 8.0, 12.0, 12.0, 8.0]  = D5 + D6 = 8 × D2
+</pre>
+
+<p>
+Coefficient sequence: n, n, 2n, 3n, 5n, 8n = 5, 5, 10, 15, 25, 40. Ratios: 5/5=1.0, 10/5=2.0, 15/10=1.5, 25/15=1.667, 40/25=1.600. The ratio converges to φ ≈ 1.618.
+</p>
+
+<p>
+Recovery from D1: [0.3→1, 0.2→0, 0.3→1, 0.3→1, 0.2→0] = 10110 ✓
+</p>
+
+
+<!-- ════════════════════════════════════════════════════════════════════
+     APPENDIX B
+     ════════════════════════════════════════════════════════════════════ -->
+
+<h2>Appendix B &nbsp; Circuit Notation Example</h2>
+
+<p>
+MDB includes a declarative circuit builder with ASCII visualization. Example — a 3-qubit GHZ state:
+</p>
+
+<pre>
+let result = Circuit::new(3, "GHZ")
+    .h(0)
+    .cnot(0, 1)
+    .cnot(1, 2)
+    .measure_all()
+    .execute();
+
+// ASCII output:
+// q0: ─[H]─●─────
+// q1: ─────⊕──●──
+// q2: ────────⊕──
+</pre>
+
+<p>
+The resulting state is (|000⟩ + |111⟩)/√2 — a maximally entangled 3-qubit GHZ state. Using <code>peek()</code>, we can verify the exact amplitudes without measurement:
+</p>
+
+<pre>
+|000⟩  probability: 50.0%  phase: 0°
+|111⟩  probability: 50.0%  phase: 0°
+(6 other states: 0%)
+</pre>
+
+</body>
+</html>

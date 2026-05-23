@@ -1,0 +1,41 @@
+[package]
+name = "mdb-desktop"
+version = "0.1.0"
+edition = "2021"
+description = "MDB Desktop Environment — Wayland compositor for MDB-OS"
+
+[dependencies]
+mdb-core = { path = "../core" }
+
+# Wayland compositor framework
+smithay = { version = "0.3", default-features = false, features = [
+    "wayland_frontend",
+    "backend_drm",
+    "backend_libinput",
+    "backend_udev",
+    "backend_winit",
+    "renderer_gl",
+    "xwayland",
+] }
+
+# Logging & CLI
+log = "0.4"
+env_logger = "0.11"
+clap = { version = "4", features = ["derive"] }
+
+# Rendering helpers
+image = "0.25"
+fontdue = "0.9"
+png = "0.17"
+
+# System
+nix = { version = "0.29", features = ["fs", "process", "signal"] }
+libc = "0.2"
+xkbcommon = "0.8"
+
+# Async
+calloop = "0.14"
+
+# Config
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"

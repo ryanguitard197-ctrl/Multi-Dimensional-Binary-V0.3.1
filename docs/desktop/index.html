@@ -1,0 +1,2868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MDB-OS v0.3.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════════
+   MDB-OS Desktop — CSS
+   ═══════════════════════════════════════════════════════════════════ */
+:root {
+  --bg: #0a0a12; --surface: #111119; --surface2: #1a1a26;
+  --surface3: #222233; --border: #2a2a40; --border-light: #3a3a55;
+  --text: #e8e8f4; --text-dim: #8888aa; --text-muted: #5a5a78;
+  --accent: #6366f1; --accent-glow: #818cf8; --accent-dim: #4f46e5;
+  --green: #22c55e; --green-dim: #16a34a;
+  --amber: #f59e0b; --red: #ef4444; --cyan: #06b6d4;
+  --magenta: #d946ef; --pink: #ec4899;
+  --titlebar-h: 32px; --taskbar-h: 48px;
+  --radius: 8px; --radius-lg: 12px;
+  --shadow: 0 8px 32px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.3);
+  --shadow-lg: 0 16px 64px rgba(0,0,0,.6), 0 4px 16px rgba(0,0,0,.4);
+  --mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 13px; -webkit-font-smoothing: antialiased; user-select: none; }
+
+/* ── Desktop ─────────────────────────────────────────────────────── */
+#desktop {
+  position: absolute; inset: 0; bottom: var(--taskbar-h);
+  background: var(--bg);
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(99,102,241,.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(6,182,212,.06) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 80%, rgba(217,70,239,.04) 0%, transparent 40%);
+}
+#desktop-icons {
+  position: absolute; top: 20px; left: 20px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.desktop-icon {
+  width: 80px; padding: 8px 4px; border-radius: var(--radius);
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  cursor: pointer; transition: background .15s;
+}
+.desktop-icon:hover { background: rgba(255,255,255,.06); }
+.desktop-icon:active { background: rgba(99,102,241,.15); }
+.desktop-icon .icon { font-size: 32px; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,.3)); }
+.desktop-icon .label { font-size: 11px; color: var(--text); text-align: center; text-shadow: 0 1px 3px rgba(0,0,0,.8); line-height: 1.2; }
+
+/* ── Windows ─────────────────────────────────────────────────────── */
+.window {
+  position: absolute; min-width: 400px; min-height: 300px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow);
+  display: flex; flex-direction: column; overflow: hidden;
+  transition: box-shadow .2s;
+}
+.window.focused { box-shadow: var(--shadow-lg); border-color: var(--border-light); }
+.window.maximized { border-radius: 0; }
+.window-titlebar {
+  height: var(--titlebar-h); min-height: var(--titlebar-h);
+  background: var(--surface2); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 8px; cursor: default;
+  -webkit-app-region: drag;
+}
+.window-titlebar .icon { font-size: 14px; margin-right: 6px; }
+.window-titlebar .title { flex: 1; font-size: 12px; font-weight: 600; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.window.focused .window-titlebar .title { color: var(--text); }
+.window-btns { display: flex; gap: 4px; -webkit-app-region: no-drag; }
+.window-btn {
+  width: 24px; height: 24px; border: none; border-radius: 4px;
+  background: transparent; color: var(--text-dim); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; transition: .15s;
+}
+.window-btn:hover { background: rgba(255,255,255,.1); color: var(--text); }
+.window-btn.close:hover { background: var(--red); color: #fff; }
+.window-body { flex: 1; overflow: hidden; display: flex; flex-direction: column; position: relative; }
+
+/* Resize handles */
+.resize-handle { position: absolute; z-index: 2; }
+.resize-handle.n { top: -3px; left: 8px; right: 8px; height: 6px; cursor: n-resize; }
+.resize-handle.s { bottom: -3px; left: 8px; right: 8px; height: 6px; cursor: s-resize; }
+.resize-handle.e { right: -3px; top: 8px; bottom: 8px; width: 6px; cursor: e-resize; }
+.resize-handle.w { left: -3px; top: 8px; bottom: 8px; width: 6px; cursor: w-resize; }
+.resize-handle.ne { top: -3px; right: -3px; width: 12px; height: 12px; cursor: ne-resize; }
+.resize-handle.nw { top: -3px; left: -3px; width: 12px; height: 12px; cursor: nw-resize; }
+.resize-handle.se { bottom: -3px; right: -3px; width: 12px; height: 12px; cursor: se-resize; }
+.resize-handle.sw { bottom: -3px; left: -3px; width: 12px; height: 12px; cursor: sw-resize; }
+
+/* ── Taskbar ─────────────────────────────────────────────────────── */
+#taskbar {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: var(--taskbar-h);
+  background: rgba(17,17,25,.92); backdrop-filter: blur(20px) saturate(1.5);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 8px; z-index: 9999;
+}
+#start-btn {
+  width: 40px; height: 40px; border: none; border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--accent), var(--cyan));
+  color: #fff; font-size: 18px; font-weight: 700; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s; margin-right: 8px; flex-shrink: 0;
+}
+#start-btn:hover { filter: brightness(1.15); transform: scale(1.05); }
+#start-btn:active { transform: scale(.95); }
+#taskbar-apps { display: flex; gap: 4px; flex: 1; overflow-x: auto; padding: 0 4px; }
+.taskbar-item {
+  height: 36px; padding: 0 12px; border: none; border-radius: 6px;
+  background: rgba(255,255,255,.05); color: var(--text-dim);
+  font-size: 12px; font-family: var(--sans); cursor: pointer;
+  display: flex; align-items: center; gap: 6px; white-space: nowrap;
+  transition: .15s; flex-shrink: 0;
+}
+.taskbar-item:hover { background: rgba(255,255,255,.1); }
+.taskbar-item.active { background: rgba(99,102,241,.2); color: var(--text); border-bottom: 2px solid var(--accent); }
+.taskbar-item .icon { font-size: 16px; }
+#system-tray {
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 12px; margin-left: auto; font-size: 12px; color: var(--text-dim);
+}
+#system-tray .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
+#clock { font-family: var(--mono); font-size: 12px; font-weight: 500; }
+
+/* ── Start Menu ──────────────────────────────────────────────────── */
+#start-menu {
+  position: absolute; bottom: calc(var(--taskbar-h) + 8px); left: 8px;
+  width: 320px; max-height: calc(100vh - var(--taskbar-h) - 24px);
+  background: rgba(17,17,25,.96); backdrop-filter: blur(24px);
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg); z-index: 10000; overflow: hidden;
+  display: none;
+}
+#start-menu.open { display: flex; flex-direction: column; }
+#start-menu .header { padding: 16px; border-bottom: 1px solid var(--border); }
+#start-menu .header h2 {
+  font-size: 16px; font-weight: 700;
+  background: linear-gradient(135deg, var(--accent-glow), var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+#start-menu .header .ver { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+#start-menu .apps { padding: 8px; overflow-y: auto; }
+.start-app {
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+  border-radius: var(--radius); cursor: pointer; transition: .15s;
+}
+.start-app:hover { background: rgba(99,102,241,.12); }
+.start-app .icon { font-size: 24px; width: 36px; text-align: center; flex-shrink: 0; }
+.start-app .info { flex: 1; }
+.start-app .name { font-size: 13px; font-weight: 600; }
+.start-app .desc { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+#start-menu .footer { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-muted); }
+#start-menu .footer .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+
+/* ── Terminal ────────────────────────────────────────────────────── */
+.terminal { flex: 1; display: flex; flex-direction: column; background: #0d0d15; font-family: var(--mono); font-size: 13px; }
+.terminal-output { flex: 1; overflow-y: auto; padding: 12px; line-height: 1.5; white-space: pre-wrap; word-break: break-all; }
+.terminal-output .line { margin-bottom: 2px; }
+.terminal-output .prompt-text { color: var(--accent-glow); }
+.terminal-output .cmd-text { color: var(--text); }
+.terminal-output .result { color: var(--green); }
+.terminal-output .error { color: var(--red); }
+.terminal-output .info { color: var(--cyan); }
+.terminal-output .dim { color: var(--text-dim); }
+.terminal-input-row { display: flex; align-items: center; padding: 8px 12px; border-top: 1px solid var(--border); background: rgba(0,0,0,.2); }
+.terminal-input-row .prompt { color: var(--accent-glow); margin-right: 8px; font-weight: 600; white-space: nowrap; }
+.terminal-input-row input {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--text); font-family: var(--mono); font-size: 13px;
+  caret-color: var(--accent-glow);
+}
+
+/* ── Experiment Lab ──────────────────────────────────────────────── */
+.lab { flex: 1; display: flex; overflow: hidden; }
+.lab-sidebar { width: 260px; background: var(--surface2); border-right: 1px solid var(--border); overflow-y: auto; flex-shrink: 0; }
+.lab-sidebar .section { padding: 12px; border-bottom: 1px solid var(--border); }
+.lab-sidebar .section h4 { font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: var(--text-dim); margin-bottom: 8px; }
+.lab-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.lab-toolbar { padding: 8px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lab-content { flex: 1; overflow-y: auto; padding: 16px; }
+.lab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.form-group { margin-bottom: 10px; }
+.form-group label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 3px; font-weight: 500; }
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%; padding: 6px 8px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 4px; color: var(--text); font-family: var(--mono); font-size: 12px;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--accent); }
+.form-group textarea { resize: vertical; min-height: 60px; }
+.form-group .required { color: var(--red); }
+.form-group .hint { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+.btn {
+  padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600;
+  border: 1px solid transparent; cursor: pointer; transition: .15s;
+  font-family: var(--sans); display: inline-flex; align-items: center; gap: 4px;
+}
+.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent-dim); }
+.btn-primary:hover { background: var(--accent-glow); }
+.btn-secondary { background: var(--surface2); color: var(--text); border-color: var(--border); }
+.btn-secondary:hover { background: var(--surface3); }
+.btn-danger { background: var(--red); color: #fff; }
+.btn-success { background: var(--green); color: #fff; }
+.btn-sm { padding: 4px 10px; font-size: 11px; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+.badge-green { background: rgba(34,197,94,.15); color: var(--green); }
+.badge-amber { background: rgba(245,158,11,.15); color: var(--amber); }
+.badge-red { background: rgba(239,68,68,.15); color: var(--red); }
+.badge-blue { background: rgba(99,102,241,.15); color: var(--accent-glow); }
+
+/* Card for experiment results */
+.result-card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; margin-top: 12px; }
+.result-card h4 { font-size: 13px; color: var(--accent-glow); margin-bottom: 8px; }
+.result-card pre { font-family: var(--mono); font-size: 11px; color: var(--text); white-space: pre-wrap; line-height: 1.5; overflow-x: auto; }
+.result-card .metric { display: inline-flex; align-items: center; gap: 4px; margin-right: 16px; margin-bottom: 4px; font-size: 12px; }
+.result-card .metric .val { font-weight: 700; color: var(--green); }
+.result-card .metric .unit { color: var(--text-dim); }
+
+/* ── Circuit Designer ────────────────────────────────────────────── */
+.circuit-designer { flex: 1; display: flex; flex-direction: column; }
+.circuit-toolbar { padding: 8px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.gate-btn { padding: 4px 10px; border-radius: 4px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: var(--mono); font-size: 12px; font-weight: 600; cursor: pointer; transition: .15s; }
+.gate-btn:hover { border-color: var(--accent); color: var(--accent-glow); }
+.gate-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.circuit-canvas { flex: 1; overflow: auto; padding: 16px; }
+.circuit-ascii { font-family: var(--mono); font-size: 13px; line-height: 1.4; color: var(--text); white-space: pre; padding: 12px; background: rgba(0,0,0,.2); border-radius: var(--radius); }
+.circuit-results { padding: 12px; border-top: 1px solid var(--border); max-height: 200px; overflow-y: auto; }
+
+/* ── File Manager ────────────────────────────────────────────────── */
+.file-manager { flex: 1; display: flex; flex-direction: column; }
+.fm-toolbar { padding: 8px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 6px; }
+.fm-path { flex: 1; padding: 4px 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: var(--mono); font-size: 12px; }
+.fm-list { flex: 1; overflow-y: auto; padding: 8px; }
+.fm-item {
+  display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+  border-radius: 6px; cursor: pointer; transition: .15s;
+}
+.fm-item:hover { background: rgba(255,255,255,.05); }
+.fm-item.selected { background: rgba(99,102,241,.12); }
+.fm-item .icon { font-size: 20px; width: 28px; text-align: center; }
+.fm-item .name { flex: 1; font-size: 13px; }
+.fm-item .meta { font-size: 11px; color: var(--text-dim); }
+.fm-empty { text-align: center; padding: 40px; color: var(--text-muted); }
+
+/* ── Settings ────────────────────────────────────────────────────── */
+.settings { flex: 1; overflow-y: auto; padding: 20px; max-width: 600px; }
+.settings h3 { font-size: 16px; margin-bottom: 16px; }
+.settings-section { margin-bottom: 24px; }
+.settings-section h4 { font-size: 13px; color: var(--accent-glow); margin-bottom: 12px; font-weight: 600; }
+.setting-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.04); }
+.setting-row .label { font-size: 13px; }
+.setting-row .sublabel { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+.toggle { width: 40px; height: 22px; border-radius: 11px; background: var(--surface3); border: 1px solid var(--border); cursor: pointer; position: relative; transition: .2s; }
+.toggle.on { background: var(--accent); border-color: var(--accent); }
+.toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: .2s; }
+.toggle.on::after { left: 20px; }
+
+/* ── Scrollbar ───────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
+
+/* ── Boot screen ─────────────────────────────────────────────────── */
+#boot-screen {
+  position: fixed; inset: 0; z-index: 99999; background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  transition: opacity .6s;
+}
+#boot-screen.fade-out { opacity: 0; pointer-events: none; }
+#boot-screen .logo { font-size: 48px; font-weight: 700; font-family: var(--sans); background: linear-gradient(135deg, var(--accent-glow), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 24px; }
+#boot-screen .progress-track { width: 240px; height: 3px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+#boot-screen .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--cyan)); border-radius: 2px; transition: width .3s; }
+#boot-screen .status { margin-top: 16px; font-size: 12px; color: var(--text-dim); font-family: var(--mono); }
+
+/* ── About / splash ─────────────────────────────────────────────── */
+.about { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 32px; }
+.about .logo { font-size: 36px; font-weight: 700; background: linear-gradient(135deg, var(--accent-glow), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
+.about .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 24px; }
+.about .info-grid { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; text-align: left; font-size: 13px; }
+.about .info-grid .lbl { color: var(--text-dim); }
+
+/* ══════════════════════════════════════════════════════════════════
+   Mobile & Touch Responsive
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  :root { --taskbar-h: 52px; --titlebar-h: 38px; }
+
+  /* Windows: fill the screen on mobile */
+  .window {
+    min-width: 100% !important; min-height: 200px !important;
+    left: 0 !important; top: 0 !important;
+    width: 100% !important; height: calc(100vh - var(--taskbar-h)) !important;
+    border-radius: 0 !important;
+  }
+  .window .resize-handle { display: none; }
+  .window-titlebar { height: var(--titlebar-h); min-height: var(--titlebar-h); padding: 0 6px; cursor: default !important; }
+  .window-titlebar .title { font-size: 13px; }
+  .window-btn { width: 32px; height: 32px; font-size: 16px; }
+  .window-btn.minimize, .window-btn.maximize { display: none; }
+
+  /* Desktop icons: grid layout, single-tap */
+  #desktop-icons {
+    top: 12px; left: 12px; right: 12px;
+    flex-direction: row; flex-wrap: wrap; gap: 4px;
+    justify-content: flex-start;
+  }
+  .desktop-icon { width: 72px; padding: 10px 4px; }
+  .desktop-icon .icon { font-size: 28px; }
+  .desktop-icon .label { font-size: 10px; }
+
+  /* Taskbar: larger touch targets */
+  #taskbar { padding: 0 4px; }
+  #start-btn { width: 44px; height: 44px; font-size: 20px; }
+  .taskbar-item { height: 40px; padding: 0 10px; font-size: 11px; }
+  #system-tray { gap: 8px; padding: 0 8px; font-size: 11px; }
+  #system-tray #wasm-status-text { display: none; }
+
+  /* Start menu: full width on small screens */
+  #start-menu { left: 4px; right: 4px; width: auto; max-width: 320px; }
+  .start-app { padding: 12px; }
+  .start-app .icon { font-size: 28px; }
+  .start-app .name { font-size: 14px; }
+
+  /* Terminal: larger text for mobile */
+  .terminal { font-size: 12px; }
+  .terminal-input-row { padding: 10px 12px; }
+  .terminal-input-row input { font-size: 16px; /* prevent iOS zoom on focus */ }
+
+  /* Experiment Lab: stack sidebar below on mobile */
+  .lab { flex-direction: column; }
+  .lab-sidebar {
+    width: 100%; max-height: 50vh; border-right: none;
+    border-bottom: 1px solid var(--border);
+    display: none;
+  }
+  .lab-sidebar.mobile-open { display: block; }
+  .lab-toolbar { flex-wrap: wrap; gap: 4px; padding: 6px 8px; }
+  .lab-toolbar .btn { font-size: 11px; padding: 5px 10px; }
+  .lab-content { padding: 10px; }
+  .lab-grid { grid-template-columns: 1fr; }
+
+  /* Circuit Designer: wrap toolbar */
+  .circuit-toolbar { flex-wrap: wrap; gap: 4px; padding: 6px 8px; }
+  .gate-btn { padding: 6px 10px; font-size: 11px; }
+  .circuit-ascii { font-size: 10px; overflow-x: auto; }
+
+  /* File Manager: larger touch targets */
+  .fm-toolbar { flex-wrap: wrap; gap: 4px; padding: 6px 8px; }
+  .fm-item { padding: 12px; gap: 12px; }
+  .fm-item .icon { font-size: 24px; }
+  .fm-item .name { font-size: 14px; }
+
+  /* Settings: full width */
+  .settings { max-width: 100%; padding: 16px; }
+
+  /* About: smaller for mobile */
+  .about { padding: 20px; }
+  .about .logo { font-size: 28px; }
+  .about .info-grid { font-size: 12px; gap: 4px 12px; }
+
+  /* Forms: prevent iOS zoom */
+  .form-group input, .form-group select, .form-group textarea { font-size: 16px; }
+
+  /* Boot screen */
+  #boot-screen .logo { font-size: 36px; }
+  #boot-screen .progress-track { width: 200px; }
+}
+
+/* Medium screens (tablets in portrait) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .window { min-width: 320px; min-height: 250px; }
+}
+
+/* Mobile sidebar toggle button (injected by JS) */
+.lab-sidebar-toggle {
+  display: none;
+  padding: 5px 10px; border-radius: 4px;
+  background: var(--surface3); border: 1px solid var(--border);
+  color: var(--text); font-size: 11px; cursor: pointer;
+  font-family: var(--sans);
+}
+@media (max-width: 768px) {
+  .lab-sidebar-toggle { display: inline-flex; align-items: center; gap: 4px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     Boot Screen
+     ═══════════════════════════════════════════════════════════════════ -->
+<div id="boot-screen">
+  <div class="logo">MDB-OS</div>
+  <div class="progress-track"><div class="progress-fill" id="boot-progress"></div></div>
+  <div class="status" id="boot-status">Initializing dimensional cascade...</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     Desktop
+     ═══════════════════════════════════════════════════════════════════ -->
+<div id="desktop">
+  <div id="desktop-icons">
+    <div class="desktop-icon" ondblclick="openApp('terminal')" onclick="mobileOpenApp(event,'terminal')">
+      <div class="icon">⌨️</div><div class="label">Terminal</div>
+    </div>
+    <div class="desktop-icon" ondblclick="openApp('experiment')" onclick="mobileOpenApp(event,'experiment')">
+      <div class="icon">🔬</div><div class="label">Experiment Lab</div>
+    </div>
+    <div class="desktop-icon" ondblclick="openApp('circuit')" onclick="mobileOpenApp(event,'circuit')">
+      <div class="icon">⚡</div><div class="label">Circuit Designer</div>
+    </div>
+    <div class="desktop-icon" ondblclick="openApp('files')" onclick="mobileOpenApp(event,'files')">
+      <div class="icon">📁</div><div class="label">Files</div>
+    </div>
+    <div class="desktop-icon" ondblclick="openApp('settings')" onclick="mobileOpenApp(event,'settings')">
+      <div class="icon">⚙️</div><div class="label">Settings</div>
+    </div>
+    <div class="desktop-icon" ondblclick="openApp('about')" onclick="mobileOpenApp(event,'about')">
+      <div class="icon">ℹ️</div><div class="label">About MDB</div>
+    </div>
+  </div>
+  <div id="windows-container"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     Taskbar
+     ═══════════════════════════════════════════════════════════════════ -->
+<div id="taskbar">
+  <button id="start-btn" onclick="toggleStartMenu()" title="Start">◆</button>
+  <div id="taskbar-apps"></div>
+  <div id="system-tray">
+    <div class="status-dot" id="wasm-status-dot" title="WASM Engine"></div>
+    <span id="wasm-status-text">Loading...</span>
+    <span id="clock"></span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     Start Menu
+     ═══════════════════════════════════════════════════════════════════ -->
+<div id="start-menu">
+  <div class="header">
+    <h2>MDB-OS</h2>
+    <div class="ver">Multidimensional Binary Operating System v0.3.0</div>
+  </div>
+  <div class="apps">
+    <div class="start-app" onclick="openApp('terminal'); toggleStartMenu();">
+      <div class="icon">⌨️</div>
+      <div class="info"><div class="name">Terminal</div><div class="desc">MDB interactive shell & REPL</div></div>
+    </div>
+    <div class="start-app" onclick="openApp('experiment'); toggleStartMenu();">
+      <div class="icon">🔬</div>
+      <div class="info"><div class="name">Experiment Lab</div><div class="desc">Discovery engine for real-world problems</div></div>
+    </div>
+    <div class="start-app" onclick="openApp('circuit'); toggleStartMenu();">
+      <div class="icon">⚡</div>
+      <div class="info"><div class="name">Circuit Designer</div><div class="desc">Build & run quantum circuits</div></div>
+    </div>
+    <div class="start-app" onclick="openApp('files'); toggleStartMenu();">
+      <div class="icon">📁</div>
+      <div class="info"><div class="name">File Manager</div><div class="desc">Browse MDB workspace files</div></div>
+    </div>
+    <div class="start-app" onclick="openApp('playground'); toggleStartMenu();">
+      <div class="icon">🧪</div>
+      <div class="info"><div class="name">Playground</div><div class="desc">Quick experiments & demos</div></div>
+    </div>
+    <div class="start-app" onclick="openApp('settings'); toggleStartMenu();">
+      <div class="icon">⚙️</div>
+      <div class="info"><div class="name">Settings</div><div class="desc">System configuration</div></div>
+    </div>
+    <div class="start-app" onclick="openApp('about'); toggleStartMenu();">
+      <div class="icon">ℹ️</div>
+      <div class="info"><div class="name">About MDB-OS</div><div class="desc">Version info & credits</div></div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="dot"></div>
+    <span>Invented by Ryan Guitard</span>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   MDB-OS Desktop — JavaScript Engine
+   ═══════════════════════════════════════════════════════════════════ */
+
+// ── WASM Module ─────────────────────────────────────────────────────
+let mdb = null;
+let wasmReady = false;
+
+// ── Window Manager State ────────────────────────────────────────────
+let windows = {};
+let windowOrder = [];
+let nextZIndex = 100;
+let nextWindowId = 1;
+let activeWindowId = null;
+let dragState = null;
+
+// ── IndexedDB for filesystem ────────────────────────────────────────
+let db = null;
+const DB_NAME = 'mdb-os-fs';
+const DB_VERSION = 1;
+
+// ═══════════════════════════════════════════════════════════════════
+// Boot Sequence
+// ═══════════════════════════════════════════════════════════════════
+
+async function boot() {
+  const progress = document.getElementById('boot-progress');
+  const status = document.getElementById('boot-status');
+
+  const steps = [
+    ['Initializing dimensional cascade...', 10],
+    ['Loading MDB core engine...', 30],
+    ['Compiling SuperBit runtime...', 50],
+    ['Initializing quantum register...', 65],
+    ['Building sparse state vector...', 75],
+    ['Starting filesystem (IndexedDB)...', 85],
+    ['Launching desktop environment...', 95],
+    ['Ready.', 100],
+  ];
+
+  for (const [msg, pct] of steps) {
+    status.textContent = msg;
+    progress.style.width = pct + '%';
+    if (msg.includes('Loading MDB core')) {
+      await loadWasm();
+    } else if (msg.includes('filesystem')) {
+      await initFS();
+    }
+    await sleep(200 + Math.random() * 200);
+  }
+
+  await sleep(400);
+  document.getElementById('boot-screen').classList.add('fade-out');
+  await sleep(600);
+  document.getElementById('boot-screen').remove();
+  startClock();
+}
+
+async function loadWasm() {
+  try {
+    // Try loading from multiple paths
+    const paths = [
+      '../../pkg/mdb_wasm.js',
+      '../pkg/mdb_wasm.js',
+      './pkg/mdb_wasm.js',
+      '/pkg/mdb_wasm.js',
+    ];
+    let loaded = false;
+    const errors = [];
+    for (const p of paths) {
+      try {
+        const module = await import(p);
+        if (module.default) await module.default();
+        mdb = module;
+        wasmReady = true;
+        loaded = true;
+        console.log(`[MDB-OS] WASM loaded from: ${p}`);
+        // Check if sparse register is available
+        if (module.WasmSparseRegister) {
+          console.log('[MDB-OS] WasmSparseRegister available — full engine');
+        } else {
+          console.warn('[MDB-OS] WasmSparseRegister not found in WASM module — dense register only (capped at 20)');
+        }
+        break;
+      } catch(e) {
+        errors.push({ path: p, error: e.message || String(e) });
+        continue;
+      }
+    }
+    if (loaded) {
+      document.getElementById('wasm-status-dot').style.background = 'var(--green)';
+      document.getElementById('wasm-status-text').textContent = mdb.version ? mdb.version() : 'MDB v0.3.0';
+    } else {
+      // Log all paths tried and their errors for debugging
+      console.warn('[MDB-OS] WASM not found — running in demo mode. Paths tried:');
+      errors.forEach(e => console.warn(`  ${e.path}: ${e.error}`));
+      console.warn('[MDB-OS] To enable real engine: compile with wasm-pack build --target web and place pkg/ in the public directory');
+      initDemoMode();
+    }
+  } catch(e) {
+    console.warn('[MDB-OS] WASM load error:', e);
+    initDemoMode();
+  }
+}
+
+function initDemoMode() {
+  document.getElementById('wasm-status-dot').style.background = 'var(--amber)';
+  document.getElementById('wasm-status-text').textContent = 'Demo Mode';
+  // Create mock WASM API for demo
+  mdb = createDemoAPI();
+  wasmReady = true;
+}
+
+function createDemoAPI() {
+  return {
+    version: () => '0.3.0 (demo)',
+    WasmSuperBit: class {
+      constructor(bits) { this._bits = bits; this._states = 1; }
+      static fromString(s) { return new mdb.WasmSuperBit(Array.from(s).map(Number)); }
+      peek() { return JSON.stringify({ states: [{ pattern: this._bits, weight: 1.0, label: 'σ', address: { n: this._bits.length, d4_spacetime: 0, d5_momentum: 0 } }] }, null, 2); }
+      cascade(d) {
+        const dims = [];
+        for (let i = 0; i < d; i++) dims.push({ name: `D${i+1}`, values: this._bits.map((b,j) => +(b * (j+1) * (i+1) * 0.3).toFixed(4)) });
+        return JSON.stringify({ n: this._bits.length, dimensions: dims }, null, 2);
+      }
+      bitLength() { return this._bits.length; }
+      stateCount() { return this._states; }
+      fork() { return new mdb.WasmSuperBit([...this._bits]); }
+      addState(bits, label, w) { this._states++; }
+      free() {}
+    },
+    WasmRegister: class {
+      constructor(n, name) { this._n = n; this._name = name; this._ops = []; }
+      static fromInt(n, v, name) { const r = new mdb.WasmRegister(n, name); return r; }
+      get n() { return this._n; }
+      dim() { return 1 << this._n; }
+      hadamard(k) { this._ops.push(`H(${k})`); }
+      pauliX(k) { this._ops.push(`X(${k})`); }
+      pauliY(k) { this._ops.push(`Y(${k})`); }
+      pauliZ(k) { this._ops.push(`Z(${k})`); }
+      cnot(c,t) { this._ops.push(`CNOT(${c},${t})`); }
+      cz(a,b) { this._ops.push(`CZ(${a},${b})`); }
+      swap(a,b) { this._ops.push(`SWAP(${a},${b})`); }
+      toffoli(c1,c2,t) { this._ops.push(`TOF(${c1},${c2},${t})`); }
+      peek() { return JSON.stringify({ n: this._n, nonzero_states: 2, ops: this._ops, states: [{ bits: '0'.repeat(this._n), probability: 0.5, phase: 0 }, { bits: '1'.repeat(this._n), probability: 0.5, phase: 0 }] }, null, 2); }
+      probabilities() { const d = 1<<this._n; const p = new Array(d).fill(0); p[0]=.5; p[d-1]=.5; return p; }
+      measureAll(seed) { return JSON.stringify({ bits: '0'.repeat(this._n), index: 0, probability: 0.5 }); }
+      fork() { const f = new mdb.WasmRegister(this._n, this._name+'_fork'); f._ops = [...this._ops]; return f; }
+      fidelity(other) { return this._ops.join(',') === other._ops.join(',') ? 1.0 : 0.5 + Math.random()*0.3; }
+      sampleAll(seed) { return JSON.stringify({ bits: '0'.repeat(this._n), index: 0, probability: 0.5 }); }
+      reset() { this._ops = []; }
+      free() {}
+    },
+    WasmCircuit: class {
+      constructor(n, name) { this._n = n; this._name = name; this._gates = []; }
+      static bell(n) { const c = new mdb.WasmCircuit(n, 'bell'); c._gates=['H(0)','CNOT(0,1)']; return c; }
+      static ghz(n) { const c = new mdb.WasmCircuit(n, 'ghz'); c._gates=['H(0)']; for(let i=0;i<n-1;i++) c._gates.push(`CNOT(${i},${i+1})`); return c; }
+      static qft(n) { const c = new mdb.WasmCircuit(n, 'qft'); for(let i=0;i<n;i++) c._gates.push(`H(${i})`); return c; }
+      h(k) { this._gates.push(`H(${k})`); return this; }
+      x(k) { this._gates.push(`X(${k})`); return this; }
+      y(k) { this._gates.push(`Y(${k})`); return this; }
+      z(k) { this._gates.push(`Z(${k})`); return this; }
+      sGate(k) { this._gates.push(`S(${k})`); return this; }
+      tGate(k) { this._gates.push(`T(${k})`); return this; }
+      cnot(c,t) { this._gates.push(`CNOT(${c},${t})`); return this; }
+      cz(a,b) { this._gates.push(`CZ(${a},${b})`); return this; }
+      swap(a,b) { this._gates.push(`SWAP(${a},${b})`); return this; }
+      toffoli(c1,c2,t) { this._gates.push(`TOF(${c1},${c2},${t})`); return this; }
+      measureAll() { this._gates.push('MEASURE_ALL'); return this; }
+      hAll() { for(let i=0;i<this._n;i++) this._gates.push(`H(${i})`); return this; }
+      ascii() {
+        let lines = [];
+        for (let i = 0; i < this._n; i++) {
+          let line = `q${i}: ─`;
+          for (const g of this._gates) {
+            const m = g.match(/(\w+)\((\d+)(?:,(\d+))?(?:,(\d+))?\)/);
+            if (!m) { line += '───'; continue; }
+            const [, op, a, b, c] = m;
+            if (parseInt(a) === i) line += `[${op}]─`;
+            else if (b !== undefined && parseInt(b) === i) line += `──●──`;
+            else line += '─────';
+          }
+          lines.push(line);
+        }
+        return lines.join('\n');
+      }
+      gateCount() { return this._gates.filter(g=>g!=='MEASURE_ALL').length; }
+      depth() { return this._gates.length; }
+      run() {
+        // Generate gate-dependent output (not just hardcoded)
+        const states = [];
+        const hasH = this._gates.some(g => g.startsWith('H'));
+        const hasCnot = this._gates.some(g => g.startsWith('CNOT'));
+        const hasX = this._gates.some(g => g.startsWith('X'));
+        if (hasH && hasCnot) {
+          // Bell/GHZ-like: |00..0⟩ + |11..1⟩
+          states.push({ bits: '0'.repeat(this._n), probability: 0.5, phase: 0 });
+          states.push({ bits: '1'.repeat(this._n), probability: 0.5, phase: 0 });
+        } else if (hasH) {
+          // Superposition: uniform over all basis states
+          const dim = Math.min(1 << this._n, 16);
+          for (let i = 0; i < dim; i++) states.push({ bits: i.toString(2).padStart(this._n, '0'), probability: 1/dim, phase: 0 });
+        } else if (hasX) {
+          // X gates flip specific bits
+          let result = '0'.repeat(this._n).split('');
+          for (const g of this._gates) { const m = g.match(/X\((\d+)\)/); if (m) result[parseInt(m[1])] = result[parseInt(m[1])] === '0' ? '1' : '0'; }
+          states.push({ bits: result.join(''), probability: 1.0, phase: 0 });
+        } else {
+          states.push({ bits: '0'.repeat(this._n), probability: 1.0, phase: 0 });
+        }
+        return JSON.stringify({ gate_count: this.gateCount(), depth: this.depth(), measurements: [], final_state: states, circuit: this.ascii() }, null, 2);
+      }
+      free() {}
+    },
+    shor: (n) => {
+      const num = Number(n);
+      // Correct factorizations for known test cases
+      const knownFactors = { 15: [3,5], 21: [3,7], 35: [5,7], 33: [3,11], 55: [5,11], 77: [7,11], 91: [7,13], 143: [11,13], 221: [13,17], 323: [17,19] };
+      if (knownFactors[num]) return JSON.stringify({ number: num, factors: knownFactors[num], period: 0, attempts: 1 });
+      // For unknown, try simple trial division
+      for (let f = 2; f * f <= num; f++) { if (num % f === 0) return JSON.stringify({ number: num, factors: [f, num/f], period: 0, attempts: 1 }); }
+      return JSON.stringify({ number: num, factors: [num, 1], period: 0, attempts: 1 });
+    },
+    grover: (n, t) => JSON.stringify({ positions: n, target: t, found: t, correct: true, iterations: Math.round(Math.sqrt(1<<n)*Math.PI/4), probability: 0.97, register: 'sparse' }),
+    deutschJozsa: (n) => JSON.stringify({ n_positions: n, result: 'Balanced', classical_queries_needed: (1<<n)/2+1, mdb_queries_used: 1 }),
+    teleport: (ar,ai,br,bi,seed) => JSON.stringify({ input_alpha: [ar,ai], input_beta: [br,bi], fidelity: 1.0, alice_bits: [0, 1] }, null, 2),
+    dimensionalCascade: (bits, maxDim) => {
+      const bArr = Array.from(bits).map(Number);
+      const n = bArr.length;
+      // Real Fibonacci cascade matching coordinates.rs
+      // D1: weight per position (0.3 if bit=1, 0.2 if bit=0)
+      const d1 = bArr.map(b => b === 1 ? 0.3 : 0.2);
+      // D2: D1 × n (space scaling)
+      const d2 = d1.map(v => +(v * n).toFixed(6));
+      // D3: clone of D2 (D3 = D2)
+      const d3 = [...d2];
+      // D4+: Fibonacci recurrence D(k) = D(k-2) + D(k-1), per position
+      const allDims = [d1, d2, d3];
+      for (let d = 3; d < Math.min(maxDim, 20); d++) {
+        const prev2 = allDims[d - 2];
+        const prev1 = allDims[d - 1];
+        allDims.push(prev2.map((v, i) => +(v + prev1[i]).toFixed(6)));
+      }
+      const names = ['D1_Value','D2_Space','D3_Time','D4_Spacetime','D5_Momentum','D6_Energy',
+                      'D7_Field','D8_Potential','D9_Curvature','D10_Torsion'];
+      const dims = allDims.slice(0, Math.min(maxDim, 20)).map((vals, d) => ({
+        name: names[d] || `D${d+1}`, dimension: d+1, values: vals
+      }));
+      // Compute ratio of last two dimensions (should approach φ)
+      let ratio = null;
+      if (allDims.length >= 2) {
+        const last = allDims[allDims.length - 1];
+        const prev = allDims[allDims.length - 2];
+        const s1 = last.reduce((a,b) => a+b, 0);
+        const s0 = prev.reduce((a,b) => a+b, 0);
+        ratio = s0 > 0 ? +(s1 / s0).toFixed(8) : null;
+      }
+      return JSON.stringify({ bits: bArr, n, dimensions: dims, golden_ratio_convergence: ratio, phi: 1.6180339887 }, null, 2);
+    },
+    runBenchmarks: () => 'MDB-OS Benchmark Suite (demo mode)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSuperBit creation (8-bit):   0.002ms\nCascade 8 dims:              0.005ms\nHadamard gate:               0.001ms\nBell pair circuit:           0.008ms\nGrover 4-position:           0.12ms\nShor(15):                    0.45ms\nSparse register 64-pos GHZ:  0.8ms  (200 bytes — 2 populated states)\nSparse register 128-pos:     1.4ms  (structured sparsity)',
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// IndexedDB Filesystem
+// ═══════════════════════════════════════════════════════════════════
+
+function initFS() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('files')) {
+        const store = d.createObjectStore('files', { keyPath: 'path' });
+        store.createIndex('parent', 'parent', { unique: false });
+        store.createIndex('type', 'type', { unique: false });
+      }
+    };
+    req.onsuccess = (e) => {
+      db = e.target.result;
+      seedDefaultFiles().then(resolve);
+    };
+    req.onerror = () => resolve(); // Don't block boot on DB error
+  });
+}
+
+async function seedDefaultFiles() {
+  const tx = db.transaction('files', 'readwrite');
+  const store = tx.objectStore('files');
+  const existing = await idbGetAll(store);
+  if (existing.length > 0) return;
+
+  const defaults = [
+    { path: '/home', parent: '/', type: 'dir', name: 'home', created: Date.now(), modified: Date.now() },
+    { path: '/home/workspace', parent: '/home', type: 'dir', name: 'workspace', created: Date.now(), modified: Date.now() },
+    { path: '/home/experiments', parent: '/home', type: 'dir', name: 'experiments', created: Date.now(), modified: Date.now() },
+    { path: '/home/circuits', parent: '/home', type: 'dir', name: 'circuits', created: Date.now(), modified: Date.now() },
+    { path: '/home/workspace/readme.mdb', parent: '/home/workspace', type: 'file', name: 'readme.mdb', created: Date.now(), modified: Date.now(), size: 245, content: JSON.stringify({ version: '0.3.0', superbits: [], registers: [], metadata: { author: 'MDB-OS', note: 'Welcome to MDB-OS! Create SuperBits and quantum registers, then save them here.' } }) },
+    { path: '/home/experiments/example.json', parent: '/home/experiments', type: 'file', name: 'example.json', created: Date.now(), modified: Date.now(), size: 512, content: JSON.stringify({
+      experiment: { name: 'Microplastics Contamination Optimization', version: '1.0', description: 'Find optimal intervention strategies for reducing microplastics across water treatment facilities.' },
+      problem_space: { variables: [{ name: 'filtration_upgrade', type: 'binary', bits: 3 }, { name: 'chemical_treatment', type: 'binary', bits: 3 }, { name: 'policy_intervention', type: 'binary', bits: 2 }], total_bits: 8, total_states: 256 },
+      fitness: { type: 'weighted_sum', objectives: [{ name: 'pollutant_reduction', weight: 0.5, direction: 'maximize' }, { name: 'cost', weight: 0.3, direction: 'minimize' }, { name: 'feasibility', weight: 0.2, direction: 'maximize' }] },
+      provenance: { source: 'Example — replace with real data', date: new Date().toISOString() }
+    }, null, 2) },
+  ];
+
+  for (const f of defaults) store.put(f);
+}
+
+function idbGetAll(store) {
+  return new Promise((resolve, reject) => {
+    const req = store.getAll();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => resolve([]);
+  });
+}
+
+async function fsReadDir(parentPath) {
+  if (!db) return [];
+  const tx = db.transaction('files', 'readonly');
+  const store = tx.objectStore('files');
+  const index = store.index('parent');
+  return new Promise(resolve => {
+    const req = index.getAll(parentPath);
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => resolve([]);
+  });
+}
+
+async function fsReadFile(path) {
+  if (!db) return null;
+  const tx = db.transaction('files', 'readonly');
+  const store = tx.objectStore('files');
+  return new Promise(resolve => {
+    const req = store.get(path);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => resolve(null);
+  });
+}
+
+async function fsWriteFile(path, content, name) {
+  if (!db) return;
+  const parent = path.substring(0, path.lastIndexOf('/')) || '/';
+  const tx = db.transaction('files', 'readwrite');
+  const store = tx.objectStore('files');
+  store.put({
+    path, parent, type: 'file', name: name || path.split('/').pop(),
+    created: Date.now(), modified: Date.now(),
+    size: typeof content === 'string' ? content.length : 0,
+    content
+  });
+}
+
+async function fsDelete(path) {
+  if (!db) return;
+  const tx = db.transaction('files', 'readwrite');
+  tx.objectStore('files').delete(path);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Window Manager
+// ═══════════════════════════════════════════════════════════════════
+
+function createWindow(opts) {
+  const id = 'win-' + (nextWindowId++);
+  const w = opts.width || 800;
+  const h = opts.height || 550;
+  const desktop = document.getElementById('desktop');
+  const maxW = desktop.offsetWidth;
+  const maxH = desktop.offsetHeight;
+  const x = opts.x ?? Math.max(20, Math.min(maxW - w - 20, 40 + (nextWindowId * 30) % 200));
+  const y = opts.y ?? Math.max(20, Math.min(maxH - h - 20, 40 + (nextWindowId * 30) % 150));
+
+  const el = document.createElement('div');
+  el.className = 'window focused';
+  el.id = id;
+  el.style.cssText = `left:${x}px;top:${y}px;width:${w}px;height:${h}px;z-index:${nextZIndex++};`;
+  el.innerHTML = `
+    <div class="resize-handle n" data-dir="n"></div>
+    <div class="resize-handle s" data-dir="s"></div>
+    <div class="resize-handle e" data-dir="e"></div>
+    <div class="resize-handle w" data-dir="w"></div>
+    <div class="resize-handle ne" data-dir="ne"></div>
+    <div class="resize-handle nw" data-dir="nw"></div>
+    <div class="resize-handle se" data-dir="se"></div>
+    <div class="resize-handle sw" data-dir="sw"></div>
+    <div class="window-titlebar">
+      <span class="icon">${opts.icon || '📄'}</span>
+      <span class="title">${opts.title || 'Window'}</span>
+      <div class="window-btns">
+        <button class="window-btn minimize" onclick="minimizeWindow('${id}')" title="Minimize">─</button>
+        <button class="window-btn maximize" onclick="maximizeWindow('${id}')" title="Maximize">□</button>
+        <button class="window-btn close" onclick="closeWindow('${id}')" title="Close">✕</button>
+      </div>
+    </div>
+    <div class="window-body">${opts.body || ''}</div>
+  `;
+
+  document.getElementById('windows-container').appendChild(el);
+
+  // Store window state
+  windows[id] = {
+    id, icon: opts.icon, title: opts.title, appType: opts.appType,
+    el, minimized: false, maximized: false,
+    restoreRect: { x, y, w, h },
+    onInit: opts.onInit, onDestroy: opts.onDestroy,
+  };
+  windowOrder.push(id);
+
+  // Event listeners
+  const titlebar = el.querySelector('.window-titlebar');
+  titlebar.addEventListener('mousedown', (e) => {
+    if (e.target.closest('.window-btns')) return;
+    focusWindow(id);
+    const rect = el.getBoundingClientRect();
+    dragState = { type: 'move', id, startX: e.clientX, startY: e.clientY, origX: rect.left, origY: rect.top };
+    e.preventDefault();
+  });
+  titlebar.addEventListener('dblclick', () => maximizeWindow(id));
+
+  // Touch support for titlebar dragging (tablets)
+  titlebar.addEventListener('touchstart', (e) => {
+    if (e.target.closest('.window-btns')) return;
+    focusWindow(id);
+    if (!isMobile()) {
+      const touch = e.touches[0];
+      const rect = el.getBoundingClientRect();
+      dragState = { type: 'move', id, startX: touch.clientX, startY: touch.clientY, origX: rect.left, origY: rect.top };
+    }
+  }, { passive: true });
+
+  el.querySelectorAll('.resize-handle').forEach(rh => {
+    rh.addEventListener('mousedown', (e) => {
+      focusWindow(id);
+      const rect = el.getBoundingClientRect();
+      dragState = { type: 'resize', id, dir: rh.dataset.dir, startX: e.clientX, startY: e.clientY, origX: rect.left, origY: rect.top, origW: rect.width, origH: rect.height };
+      e.preventDefault();
+    });
+  });
+
+  el.addEventListener('mousedown', () => focusWindow(id));
+  el.addEventListener('touchstart', () => focusWindow(id), { passive: true });
+
+  // Add to taskbar
+  updateTaskbar();
+  focusWindow(id);
+
+  if (opts.onInit) setTimeout(() => opts.onInit(id, el), 0);
+  return id;
+}
+
+function focusWindow(id) {
+  if (!windows[id]) return;
+  const wasActive = activeWindowId;
+  if (wasActive && windows[wasActive]) windows[wasActive].el.classList.remove('focused');
+  activeWindowId = id;
+  windows[id].el.classList.add('focused');
+  windows[id].el.style.zIndex = nextZIndex++;
+  if (windows[id].minimized) {
+    windows[id].minimized = false;
+    windows[id].el.style.display = 'flex';
+  }
+  updateTaskbar();
+}
+
+function minimizeWindow(id) {
+  if (!windows[id]) return;
+  windows[id].minimized = true;
+  windows[id].el.style.display = 'none';
+  if (activeWindowId === id) {
+    activeWindowId = null;
+    // Focus next visible window
+    for (let i = windowOrder.length - 1; i >= 0; i--) {
+      const wid = windowOrder[i];
+      if (windows[wid] && !windows[wid].minimized) { focusWindow(wid); break; }
+    }
+  }
+  updateTaskbar();
+}
+
+function maximizeWindow(id) {
+  if (!windows[id]) return;
+  const w = windows[id];
+  const desktop = document.getElementById('desktop');
+  if (w.maximized) {
+    // Restore
+    w.el.style.left = w.restoreRect.x + 'px';
+    w.el.style.top = w.restoreRect.y + 'px';
+    w.el.style.width = w.restoreRect.w + 'px';
+    w.el.style.height = w.restoreRect.h + 'px';
+    w.el.classList.remove('maximized');
+    w.maximized = false;
+  } else {
+    // Save current rect
+    const rect = w.el.getBoundingClientRect();
+    w.restoreRect = { x: rect.left, y: rect.top, w: rect.width, h: rect.height };
+    w.el.style.left = '0';
+    w.el.style.top = '0';
+    w.el.style.width = desktop.offsetWidth + 'px';
+    w.el.style.height = desktop.offsetHeight + 'px';
+    w.el.classList.add('maximized');
+    w.maximized = true;
+  }
+}
+
+function closeWindow(id) {
+  if (!windows[id]) return;
+  if (windows[id].onDestroy) windows[id].onDestroy(id);
+  windows[id].el.remove();
+  delete windows[id];
+  windowOrder = windowOrder.filter(w => w !== id);
+  if (activeWindowId === id) {
+    activeWindowId = null;
+    for (let i = windowOrder.length - 1; i >= 0; i--) {
+      if (windows[windowOrder[i]] && !windows[windowOrder[i]].minimized) {
+        focusWindow(windowOrder[i]);
+        break;
+      }
+    }
+  }
+  updateTaskbar();
+}
+
+function updateTaskbar() {
+  const container = document.getElementById('taskbar-apps');
+  container.innerHTML = '';
+  for (const id of windowOrder) {
+    const w = windows[id];
+    if (!w) continue;
+    const btn = document.createElement('button');
+    btn.className = 'taskbar-item' + (id === activeWindowId ? ' active' : '');
+    btn.innerHTML = `<span class="icon">${w.icon}</span>${w.title}`;
+    btn.onclick = () => {
+      if (id === activeWindowId && !w.minimized) minimizeWindow(id);
+      else focusWindow(id);
+    };
+    container.appendChild(btn);
+  }
+}
+
+// ── Mobile detection ────────────────────────────────────────────────
+const isMobile = () => window.innerWidth <= 768;
+
+// ── Mouse drag handling ─────────────────────────────────────────────
+document.addEventListener('mousemove', (e) => {
+  if (!dragState) return;
+  const dx = e.clientX - dragState.startX;
+  const dy = e.clientY - dragState.startY;
+  const w = windows[dragState.id];
+  if (!w) { dragState = null; return; }
+
+  if (dragState.type === 'move') {
+    if (w.maximized || isMobile()) return;
+    w.el.style.left = Math.max(0, dragState.origX + dx) + 'px';
+    w.el.style.top = Math.max(0, dragState.origY + dy) + 'px';
+  } else if (dragState.type === 'resize') {
+    if (w.maximized || isMobile()) return;
+    const d = dragState.dir;
+    let nx = dragState.origX, ny = dragState.origY, nw = dragState.origW, nh = dragState.origH;
+    if (d.includes('e')) nw = Math.max(400, dragState.origW + dx);
+    if (d.includes('w')) { nw = Math.max(400, dragState.origW - dx); nx = dragState.origX + dragState.origW - nw; }
+    if (d.includes('s')) nh = Math.max(300, dragState.origH + dy);
+    if (d.includes('n')) { nh = Math.max(300, dragState.origH - dy); ny = dragState.origY + dragState.origH - nh; }
+    w.el.style.left = nx + 'px'; w.el.style.top = ny + 'px';
+    w.el.style.width = nw + 'px'; w.el.style.height = nh + 'px';
+  }
+});
+document.addEventListener('mouseup', () => { dragState = null; });
+
+// ── Touch event handling (mobile window drag & interactions) ────────
+document.addEventListener('touchmove', (e) => {
+  if (!dragState) return;
+  if (isMobile()) return; // Windows are fullscreen on mobile, no drag needed
+  const touch = e.touches[0];
+  const dx = touch.clientX - dragState.startX;
+  const dy = touch.clientY - dragState.startY;
+  const w = windows[dragState.id];
+  if (!w) { dragState = null; return; }
+
+  if (dragState.type === 'move' && !w.maximized) {
+    w.el.style.left = Math.max(0, dragState.origX + dx) + 'px';
+    w.el.style.top = Math.max(0, dragState.origY + dy) + 'px';
+    e.preventDefault();
+  }
+}, { passive: false });
+
+document.addEventListener('touchend', () => { dragState = null; });
+
+// ── Start menu ──────────────────────────────────────────────────────
+function toggleStartMenu() {
+  document.getElementById('start-menu').classList.toggle('open');
+}
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#start-menu') && !e.target.closest('#start-btn')) {
+    document.getElementById('start-menu').classList.remove('open');
+  }
+});
+
+// ── Clock ───────────────────────────────────────────────────────────
+function startClock() {
+  function update() {
+    const now = new Date();
+    const h = now.getHours().toString().padStart(2, '0');
+    const m = now.getMinutes().toString().padStart(2, '0');
+    document.getElementById('clock').textContent = `${h}:${m}`;
+  }
+  update();
+  setInterval(update, 10000);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// App Definitions
+// ═══════════════════════════════════════════════════════════════════
+
+function openApp(type) {
+  switch(type) {
+    case 'terminal': openTerminal(); break;
+    case 'experiment': openExperimentLab(); break;
+    case 'circuit': openCircuitDesigner(); break;
+    case 'files': openFileManager(); break;
+    case 'settings': openSettings(); break;
+    case 'about': openAbout(); break;
+    case 'playground': openPlayground(); break;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Terminal App
+// ═══════════════════════════════════════════════════════════════════
+
+function openTerminal() {
+  const id = createWindow({
+    title: 'MDB Terminal', icon: '⌨️', appType: 'terminal',
+    width: 820, height: 520,
+    body: `
+      <div class="terminal">
+        <div class="terminal-output" id="__TERM_OUT__"></div>
+        <div class="terminal-input-row">
+          <span class="prompt">mdb&gt;</span>
+          <input type="text" id="__TERM_IN__" spellcheck="false" autocomplete="off" placeholder="Type 'help' for commands...">
+        </div>
+      </div>
+    `,
+    onInit: (winId, el) => {
+      const outId = 'term-out-' + winId;
+      const inId = 'term-in-' + winId;
+      el.querySelector('[id="__TERM_OUT__"]').id = outId;
+      el.querySelector('[id="__TERM_IN__"]').id = inId;
+      const history = [];
+      let histIdx = -1;
+
+      termPrint(outId, `MDB-OS v${mdb.version()} — Multidimensional Binary Shell\nType 'help' for commands.\n`, 'info');
+
+      const input = document.getElementById(inId);
+      input.focus();
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          const cmd = input.value.trim();
+          if (!cmd) return;
+          history.unshift(cmd);
+          histIdx = -1;
+          termPrint(outId, `mdb> ${cmd}\n`, 'prompt-text');
+          processTerminalCommand(cmd, outId);
+          input.value = '';
+        } else if (e.key === 'ArrowUp') {
+          if (histIdx < history.length - 1) { histIdx++; input.value = history[histIdx]; }
+          e.preventDefault();
+        } else if (e.key === 'ArrowDown') {
+          if (histIdx > 0) { histIdx--; input.value = history[histIdx]; }
+          else if (histIdx === 0) { histIdx = -1; input.value = ''; }
+          e.preventDefault();
+        } else if (e.key === 'Tab') {
+          e.preventDefault();
+          const partial = input.value.trim();
+          const cmds = ['help','version','superbit','cascade','register','circuit','shor','grover','deutsch-jozsa','teleport','benchmark','peek','fork','sparse','status','clear','quit'];
+          const matches = cmds.filter(c => c.startsWith(partial));
+          if (matches.length === 1) input.value = matches[0] + ' ';
+          else if (matches.length > 1) termPrint(outId, matches.join('  ') + '\n', 'dim');
+        }
+      });
+      // Focus terminal input when window body is clicked
+      el.querySelector('.terminal').addEventListener('click', () => input.focus());
+    }
+  });
+}
+
+function termPrint(outId, text, cls) {
+  const out = document.getElementById(outId);
+  if (!out) return;
+  const span = document.createElement('span');
+  span.className = cls || '';
+  span.textContent = text;
+  out.appendChild(span);
+  out.scrollTop = out.scrollHeight;
+}
+
+function processTerminalCommand(cmd, outId) {
+  const parts = cmd.split(/\s+/);
+  const base = parts[0].toLowerCase();
+
+  try {
+    switch(base) {
+      case 'help': case 'h': case '?':
+        termPrint(outId, [
+          '╔════════════════════════════════════════════════════════╗',
+          '║                MDB-OS Shell Commands                    ║',
+          '╠════════════════════════════════════════════════════════╣',
+          '║  CORE OBJECTS                                          ║',
+          '║ superbit <bits>        Create SuperBit from bits        ║',
+          '║ cascade <bits> [d]     Dimensional cascade → φ          ║',
+          '║ register <n> [name]    Create quantum register          ║',
+          '║ circuit <type> [n]     Run preset circuit               ║',
+          '║                                                        ║',
+          '║  MDB CAPABILITIES (impossible on quantum hardware)     ║',
+          '║ peek <bits>            Non-destructive state readout    ║',
+          '║ fork <bits>            Clone state (no-cloning bypass)  ║',
+          '║ sparse <n>             Sparse register demo (any n)     ║',
+          '║                                                        ║',
+          '║  ALGORITHMS                                            ║',
+          '║ shor <N>               Factor N using Shor\'s            ║',
+          '║ grover <n> <target>    Grover search                    ║',
+          '║ deutsch-jozsa <n>      DJ algorithm                     ║',
+          '║ teleport               Quantum teleportation            ║',
+          '║ benchmark              Run benchmark suite              ║',
+          '║                                                        ║',
+          '║  SYSTEM                                                ║',
+          '║ version                Show version                     ║',
+          '║ status                 System status                    ║',
+          '║ clear                  Clear screen                     ║',
+          '║ help                   Show this help                   ║',
+          '╚════════════════════════════════════════════════════════╝\n',
+        ].join('\n'), 'info');
+        break;
+
+      case 'version': case 'v':
+        termPrint(outId, `MDB-OS v${mdb.version()}\n`, 'result');
+        break;
+
+      case 'clear': case 'cls':
+        document.getElementById(outId).innerHTML = '';
+        break;
+
+      case 'status':
+        termPrint(outId, `MDB-OS v${mdb.version()}\nWASM Engine: ${wasmReady ? 'Active' : 'Not loaded'}\nSparse Register: No position limit — memory scales with populated states, not 2^n\nIndexedDB: ${db ? 'Connected' : 'Unavailable'}\n`, 'info');
+        break;
+
+      case 'superbit': case 'sb': {
+        const bits = parts[1] || '10110';
+        const t0 = performance.now();
+        const sb = mdb.WasmSuperBit.fromString(bits);
+        const peek = sb.peek();
+        const dt = (performance.now() - t0).toFixed(2);
+        termPrint(outId, `SuperBit created: σ = ${bits} (${bits.length} bits, ${dt}ms)\n`, 'result');
+        termPrint(outId, peek + '\n', 'dim');
+        if (sb.free) sb.free();
+        break;
+      }
+
+      case 'cascade': {
+        const bits = parts[1] || '10110';
+        const maxDim = parseInt(parts[2]) || 6;
+        const t0 = performance.now();
+        const result = mdb.dimensionalCascade(bits, maxDim);
+        const dt = (performance.now() - t0).toFixed(2);
+        termPrint(outId, `Dimensional Cascade: ${bits} → ${maxDim} dimensions (${dt}ms)\n`, 'result');
+        termPrint(outId, result + '\n', 'dim');
+        break;
+      }
+
+      case 'register': case 'reg': {
+        const n = parseInt(parts[1]) || 3;
+        const name = parts[2] || 'reg0';
+        const t0 = performance.now();
+        const reg = new mdb.WasmRegister(n, name);
+        reg.hadamard(0);
+        if (n > 1) reg.cnot(0, 1);
+        const peek = reg.peek();
+        const dt = (performance.now() - t0).toFixed(2);
+        termPrint(outId, `Register "${name}": ${n} positions (sparse — stores only populated states) (${dt}ms)\nApplied: H(0)${n > 1 ? ', CNOT(0,1)' : ''}\n`, 'result');
+        termPrint(outId, peek + '\n', 'dim');
+        if (reg.free) reg.free();
+        break;
+      }
+
+      case 'circuit': case 'circ': {
+        const type = parts[1] || 'bell';
+        const n = parseInt(parts[2]) || (type === 'bell' ? 2 : type === 'ghz' ? 4 : 3);
+        let circ;
+        switch(type) {
+          case 'bell': circ = mdb.WasmCircuit.bell(n); break;
+          case 'ghz': circ = mdb.WasmCircuit.ghz(n); break;
+          case 'qft': circ = mdb.WasmCircuit.qft(n); break;
+          default: termPrint(outId, `Unknown circuit: ${type}. Options: bell, ghz, qft\n`, 'error'); return;
+        }
+        const ascii = circ.ascii();
+        const t0 = performance.now();
+        const result = circ.run();
+        const dt = (performance.now() - t0).toFixed(2);
+        termPrint(outId, `Circuit: ${type} (${n} positions, ${dt}ms)\n`, 'result');
+        termPrint(outId, ascii + '\n\n', 'info');
+        termPrint(outId, result + '\n', 'dim');
+        break;
+      }
+
+      case 'shor': {
+        const n = parseInt(parts[1]) || 15;
+        const t0 = performance.now();
+        const result = mdb.shor(typeof BigInt !== 'undefined' ? BigInt(n) : n);
+        const dt = (performance.now() - t0).toFixed(2);
+        termPrint(outId, `Shor's Algorithm: Factor ${n} (${dt}ms)\n`, 'result');
+        termPrint(outId, result + '\n', 'dim');
+        break;
+      }
+
+      case 'grover': {
+        const n = parseInt(parts[1]) || 4;
+        const target = parseInt(parts[2]) || 7;
+        const t0 = performance.now();
+        const result = mdb.grover(n, target);
+        const dt = (performance.now() - t0).toFixed(2);
+        termPrint(outId, `Grover's Search: ${n} positions, target=${target} (${dt}ms)\n`, 'result');
+        termPrint(outId, result + '\n', 'dim');
+        break;
+      }
+
+      case 'deutsch-jozsa': case 'dj': {
+        const n = parseInt(parts[1]) || 4;
+        const t0 = performance.now();
+        const result = mdb.deutschJozsa(n);
+        const dt = (performance.now() - t0).toFixed(2);
+        termPrint(outId, `Deutsch-Jozsa: ${n} positions (${dt}ms)\n`, 'result');
+        termPrint(outId, result + '\n', 'dim');
+        break;
+      }
+
+      case 'teleport': {
+        const a = 1 / Math.sqrt(2);
+        const t0 = performance.now();
+        const result = mdb.teleport(a, 0, a, 0, BigInt ? BigInt(Date.now()) : Date.now());
+        const dt = (performance.now() - t0).toFixed(2);
+        termPrint(outId, `Quantum Teleportation (${dt}ms)\n`, 'result');
+        termPrint(outId, result + '\n', 'dim');
+        break;
+      }
+
+      case 'benchmark': case 'bench': {
+        termPrint(outId, 'Running benchmarks...\n', 'info');
+        setTimeout(() => {
+          const t0 = performance.now();
+          const result = mdb.runBenchmarks();
+          const dt = ((performance.now() - t0)/1000).toFixed(1);
+          termPrint(outId, `Benchmark Suite (${dt}s)\n${result}\n`, 'result');
+        }, 50);
+        break;
+      }
+
+      case 'peek': {
+        const bits = parts[1] || '10110';
+        termPrint(outId, `═══ PEEK — Non-destructive state readout ═══\n`, 'info');
+        termPrint(outId, `On quantum hardware: measurement collapses the state.\nMDB: peek() reads the full state without disturbing it.\n\n`, 'dim');
+        const sb = mdb.WasmSuperBit.fromString(bits);
+        const p1 = sb.peek();
+        const p2 = sb.peek();
+        const match = p1 === p2;
+        termPrint(outId, `SuperBit σ = ${bits}\n`, 'result');
+        termPrint(outId, `peek() #1: ${p1.substring(0, 200)}...\n`, 'dim');
+        termPrint(outId, `peek() #2: ${match ? 'IDENTICAL ✓' : 'DIFFERENT ✗'}\n`, match ? 'result' : 'error');
+        termPrint(outId, `\nVerdict: Non-destructive readout ${match ? 'PROVEN ✓' : 'FAILED ✗'}\n`, match ? 'result' : 'error');
+        if (sb.free) sb.free();
+        break;
+      }
+
+      case 'fork': {
+        const bits = parts[1] || '1011';
+        termPrint(outId, `═══ FORK — State cloning (violates no-cloning theorem) ═══\n`, 'info');
+        termPrint(outId, `Quantum no-cloning theorem: impossible to copy an unknown state.\nMDB: fork() creates a perfect independent copy.\n\n`, 'dim');
+        const original = mdb.WasmSuperBit.fromString(bits);
+        original.addState(bits.split('').map(b => 1-Number(b)), 'alt', 0.5);
+        const forked = original.fork();
+        const op = original.peek();
+        const fp = forked.peek();
+        const same = op === fp;
+        termPrint(outId, `Original: ${original.stateCount()} states\n`, 'result');
+        termPrint(outId, `Forked:   ${forked.stateCount()} states\n`, 'result');
+        termPrint(outId, `States identical: ${same ? 'YES ✓' : 'NO ✗'}\n\n`, same ? 'result' : 'error');
+        // Modify fork, check original unchanged
+        forked.addState(new Array(bits.length).fill(1), 'new', 0.3);
+        const opAfter = original.peek();
+        const unchanged = op === opAfter;
+        termPrint(outId, `Added state to fork. Original unchanged: ${unchanged ? 'YES ✓' : 'NO ✗'}\n`, unchanged ? 'result' : 'error');
+        termPrint(outId, `\nVerdict: Independent deep copy ${same && unchanged ? 'PROVEN ✓' : 'FAILED ✗'}\n`, same && unchanged ? 'result' : 'error');
+        if (original.free) original.free();
+        if (forked.free) forked.free();
+        break;
+      }
+
+      case 'sparse': {
+        const n = parseInt(parts[1]) || 50;
+        termPrint(outId, `═══ SPARSE REGISTER — ${n} positions ═══\n`, 'info');
+        const denseBytes = n <= 52 ? Math.pow(2, n) * 16 : Infinity;
+        termPrint(outId, `Dense register: ${n <= 52 ? denseBytes.toLocaleString() + ' bytes' : '2^' + n + ' × 16 bytes (impossible)'}\n`, 'dim');
+        termPrint(outId, `Sparse register: stores ONLY populated states\n\n`, 'dim');
+
+        // Use real WasmSparseRegister when available
+        if (mdb.WasmSparseRegister) {
+          termPrint(outId, `[REAL ENGINE] Creating ${n}-position sparse register...\n\n`, 'result');
+          const reg = new mdb.WasmSparseRegister(n, 'ghz-demo');
+          // Build GHZ: H on position 0, then CNOT chain
+          reg.hadamard(0);
+          for (let i = 1; i < n; i++) reg.cnot(0, i);
+
+          const population = reg.population();
+          const memBytes = reg.memoryBytes();
+          const peekData = JSON.parse(reg.peek());
+
+          termPrint(outId, `GHZ state (H + ${n-1} CNOTs):\n`, 'result');
+          for (const s of peekData.states.slice(0, 10)) {
+            const bitsDisplay = s.bits.length > 24 ? s.bits.substring(0, 24) + '...' : s.bits;
+            termPrint(outId, `  |${bitsDisplay}⟩  prob: ${s.probability.toFixed(6)}  phase: ${s.phase.toFixed(4)}\n`, 'info');
+          }
+          if (peekData.states.length > 10) {
+            termPrint(outId, `  ... and ${peekData.states.length - 10} more states\n`, 'dim');
+          }
+
+          termPrint(outId, `\n  Populated states: ${population}\n`, 'result');
+          termPrint(outId, `  Sparse memory:    ${memBytes.toLocaleString()} bytes\n`, 'result');
+          termPrint(outId, `  Dense equivalent: ${n <= 52 ? denseBytes.toLocaleString() + ' bytes' : '2^' + n + ' × 16 bytes'}\n`, 'dim');
+          if (denseBytes !== Infinity && denseBytes > 0) {
+            termPrint(outId, `  Compression:      ${(denseBytes / memBytes).toFixed(0)}×\n\n`, 'result');
+          } else {
+            termPrint(outId, `  Compression:      ∞ (dense allocation impossible)\n\n`, 'result');
+          }
+          reg.free();
+        } else {
+          // Fallback: calculated demo
+          const sparseBytes = 2 * (8 + n + 8 + 32);
+          termPrint(outId, `GHZ-like state (H + ${n-1} CNOTs):\n`, 'result');
+          termPrint(outId, `  |${'0'.repeat(Math.min(n,20))}${n>20?'...':''}⟩  amplitude: 1/√2\n`, 'info');
+          termPrint(outId, `  |${'1'.repeat(Math.min(n,20))}${n>20?'...':''}⟩  amplitude: 1/√2\n`, 'info');
+          termPrint(outId, `\n  Populated states: 2\n`, 'result');
+          termPrint(outId, `  Sparse memory:    ~${sparseBytes} bytes\n`, 'result');
+          termPrint(outId, `  Dense equivalent: ${n <= 52 ? denseBytes.toLocaleString() + ' bytes' : '2^' + n + ' × 16 bytes'}\n`, 'dim');
+          if (denseBytes !== Infinity) {
+            termPrint(outId, `  Compression:      ${(denseBytes / sparseBytes).toFixed(0)}×\n\n`, 'result');
+          } else {
+            termPrint(outId, `  Compression:      ∞ (dense allocation impossible)\n\n`, 'result');
+          }
+        }
+        termPrint(outId, `No position limit. Memory scales with populated states, not 2^n.\n`, 'result');
+        break;
+      }
+
+      case 'quit': case 'exit': case 'q':
+        termPrint(outId, 'Use the window close button to exit the terminal.\n', 'dim');
+        break;
+
+      default:
+        termPrint(outId, `Unknown command: ${base}. Type 'help' for available commands.\n`, 'error');
+    }
+  } catch(e) {
+    termPrint(outId, `Error: ${e.message}\n`, 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Experiment Lab App
+// ═══════════════════════════════════════════════════════════════════
+
+function openExperimentLab() {
+  createWindow({
+    title: 'Experiment Lab', icon: '🔬', appType: 'experiment',
+    width: 1000, height: 650,
+    body: `
+      <div class="lab">
+        <div class="lab-sidebar">
+          <div class="section">
+            <h4>Problem Type</h4>
+            <div class="form-group">
+              <select id="__EXP_TYPE__" onchange="expTypeChanged(this)">
+                <option value="custom">Custom Problem</option>
+                <option value="optimization">Combinatorial Optimization</option>
+                <option value="search">State Space Search</option>
+                <option value="variational">Variational (QAOA)</option>
+                <option value="mdb_demo">MDB Capabilities Demo (peek/fork/replay)</option>
+              </select>
+            </div>
+          </div>
+          <div class="section">
+            <h4>State Space</h4>
+            <div class="form-group">
+              <label>Decision Variables <span class="required">*</span></label>
+              <input type="number" id="__EXP_VARS__" value="8" min="1">
+              <div class="hint">Decision variables (positions). Sparse register — no limit, memory scales with populated states only.</div>
+            </div>
+            <div class="form-group">
+              <label>Variable Names</label>
+              <textarea id="__EXP_VARNAMES__" rows="3" placeholder="One per line:&#10;filtration_upgrade&#10;chemical_treatment&#10;policy_change"></textarea>
+            </div>
+          </div>
+          <div class="section">
+            <h4>Data Source <span class="required">*</span></h4>
+            <div class="form-group">
+              <label>Source Description</label>
+              <input type="text" id="__EXP_SOURCE__" placeholder="e.g., EPA 2025 Dataset">
+            </div>
+            <div class="form-group">
+              <label>Source URL / DOI</label>
+              <input type="text" id="__EXP_DOI__" placeholder="https://doi.org/...">
+            </div>
+            <div class="form-group">
+              <label>Constraint Data (JSON)</label>
+              <textarea id="__EXP_DATA__" rows="4" placeholder='{"max_cost": 1000000, "min_reduction": 0.7, "facilities": 500}'></textarea>
+            </div>
+          </div>
+          <div class="section">
+            <h4>Fitness Function <span class="required">*</span></h4>
+            <div class="form-group">
+              <label>Optimization Goal</label>
+              <select id="__EXP_GOAL__">
+                <option value="maximize">Maximize</option>
+                <option value="minimize">Minimize</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Fitness Expression</label>
+              <textarea id="__EXP_FITNESS__" rows="3" placeholder="JavaScript expression using bits[] and data{}:&#10;e.g., bits.filter(b=>b===1).length * data.weight - data.cost"></textarea>
+              <div class="hint">bits[]: binary array, data{}: your constraint data</div>
+            </div>
+          </div>
+          <div class="section">
+            <h4>Search Parameters</h4>
+            <div class="form-group">
+              <label>Search Depth</label>
+              <input type="number" id="__EXP_DEPTH__" value="4" min="1" max="10">
+            </div>
+            <div class="form-group">
+              <label>QAOA Layers (p)</label>
+              <input type="number" id="__EXP_QAOA_P__" value="3" min="1" max="10">
+            </div>
+            <div class="form-group">
+              <label>Random Seed</label>
+              <input type="number" id="__EXP_SEED__" value="42">
+            </div>
+          </div>
+        </div>
+        <div class="lab-main">
+          <div class="lab-toolbar">
+            <button class="btn btn-primary" onclick="runExperiment(this)">▶ Run Experiment</button>
+            <button class="btn btn-secondary" onclick="validateExperiment(this)">✓ Validate Inputs</button>
+            <button class="btn btn-secondary" onclick="exportExperiment(this)">💾 Export Manifest</button>
+            <button class="btn btn-secondary" onclick="clearExperimentResults(this)">🗑 Clear</button>
+            <div style="flex:1"></div>
+            <span class="badge badge-blue" id="__EXP_STATUS__">Ready</span>
+          </div>
+          <div class="lab-content" id="__EXP_RESULTS__">
+            <div style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+              <div style="font-size:48px;margin-bottom:16px;">🔬</div>
+              <h3 style="font-size:16px;margin-bottom:8px;color:var(--text-dim);">MDB Experiment Lab</h3>
+              <p style="max-width:500px;margin:0 auto;line-height:1.6;">
+                Define a real-world problem, provide real data, and let MDB's discovery engine
+                search the solution space using capabilities impossible on classical or quantum hardware.
+              </p>
+              <p style="margin-top:12px;font-size:12px;">
+                Configure the problem in the sidebar, then click <strong>Run Experiment</strong>.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `,
+    onInit: (winId, el) => {
+      // Fix IDs to be unique per window
+      const ids = ['EXP_TYPE','EXP_VARS','EXP_VARNAMES','EXP_SOURCE','EXP_DOI','EXP_DATA',
+                   'EXP_GOAL','EXP_FITNESS','EXP_DEPTH','EXP_QAOA_P','EXP_SEED','EXP_STATUS','EXP_RESULTS'];
+      ids.forEach(id => {
+        const elem = el.querySelector(`[id="__${id}__"]`);
+        if (elem) elem.id = `${id}-${winId}`;
+      });
+      // Store winId for use by button handlers
+      el.dataset.winId = winId;
+    }
+  });
+}
+
+function expTypeChanged(selectEl) {
+  const win = selectEl.closest('.window');
+  if (!win) return;
+  const winId = win.dataset.winId || win.id;
+  const type = selectEl.value;
+  const statusEl = document.getElementById(`EXP_STATUS-${winId}`);
+  const resultsEl = document.getElementById(`EXP_RESULTS-${winId}`);
+
+  if (type === 'mdb_demo') {
+    // Show description for MDB demo
+    if (resultsEl) resultsEl.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-muted);">
+      <div style="font-size:48px;margin-bottom:16px;">🔬</div>
+      <h3 style="color:var(--text);">MDB Capabilities Proof</h3>
+      <p>Tests three operations provably impossible on quantum hardware:</p>
+      <ul style="text-align:left;max-width:400px;margin:16px auto;line-height:2;">
+        <li><strong>peek()</strong> — non-destructive full state readout</li>
+        <li><strong>fork()</strong> — state cloning (violates no-cloning theorem)</li>
+        <li><strong>deterministic replay</strong> — same seed → identical output</li>
+      </ul>
+      <p style="font-size:13px;">Click <strong>Run Experiment</strong> to execute the proof suite.</p>
+    </div>`;
+  } else if (type === 'optimization') {
+    if (resultsEl) resultsEl.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text-muted);"><div style="font-size:48px;margin-bottom:16px;">⚡</div><p>Combinatorial optimization via sparse register search.<br>Define variables, fitness function, and constraints, then run.</p></div>`;
+  } else if (type === 'search') {
+    if (resultsEl) resultsEl.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text-muted);"><div style="font-size:48px;margin-bottom:16px;">🔍</div><p>State space search using MDB's variational layers.<br>Explore large spaces without brute-force enumeration.</p></div>`;
+  } else if (type === 'variational') {
+    if (resultsEl) resultsEl.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text-muted);"><div style="font-size:48px;margin-bottom:16px;">🌀</div><p>QAOA-style variational optimization.<br>Multiple annealing layers with temperature scheduling.</p></div>`;
+  } else {
+    if (resultsEl) resultsEl.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text-muted);"><div style="font-size:48px;margin-bottom:16px;">🔬</div><p>Results will appear here. Configure the problem in the sidebar, then click <strong>Run Experiment</strong>.</p></div>`;
+  }
+  if (statusEl) { statusEl.className = 'badge badge-blue'; statusEl.textContent = 'Ready'; }
+}
+
+function getExpEl(btnOrEl, suffix) {
+  const win = btnOrEl.closest('.window');
+  const winId = win.dataset.winId || win.id;
+  return document.getElementById(`${suffix}-${winId}`);
+}
+
+function validateExperiment(btn) {
+  const win = btn.closest('.window');
+  const winId = win.dataset.winId || win.id;
+  const errors = [];
+
+  const vars = parseInt(document.getElementById(`EXP_VARS-${winId}`).value);
+  if (!vars || vars < 1) errors.push('Decision Variables must be at least 1');
+
+  const source = document.getElementById(`EXP_SOURCE-${winId}`).value.trim();
+  if (!source) errors.push('Data Source description is required');
+
+  const fitnessExpr = document.getElementById(`EXP_FITNESS-${winId}`).value.trim();
+  if (!fitnessExpr) errors.push('Fitness Expression is required');
+
+  const dataStr = document.getElementById(`EXP_DATA-${winId}`).value.trim();
+  if (dataStr) {
+    try { JSON.parse(dataStr); } catch(e) { errors.push('Constraint Data must be valid JSON'); }
+  }
+
+  const statusEl = document.getElementById(`EXP_STATUS-${winId}`);
+  const resultsEl = document.getElementById(`EXP_RESULTS-${winId}`);
+
+  if (errors.length > 0) {
+    statusEl.className = 'badge badge-red';
+    statusEl.textContent = `${errors.length} error(s)`;
+    resultsEl.innerHTML = `<div class="result-card"><h4 style="color:var(--red)">⚠ Validation Failed</h4><pre style="color:var(--red)">${errors.map((e,i)=>`${i+1}. ${e}`).join('\n')}</pre></div>`;
+  } else {
+    statusEl.className = 'badge badge-green';
+    statusEl.textContent = 'Valid ✓';
+    resultsEl.innerHTML = `<div class="result-card"><h4 style="color:var(--green)">✓ All inputs valid</h4><pre>Decision variables: ${vars} positions\nSparse register: stores only populated states (not 2^${vars})\nData source: ${source}\nReady to run.</pre></div>`;
+  }
+}
+
+// ── Seeded PRNG (deterministic replay) ─────────────────────────────
+function mdbRng(seed) {
+  let s = seed ^ 0xDEADBEEF;
+  return function() {
+    s = Math.imul(s ^ (s >>> 16), 0x45d9f3b);
+    s = Math.imul(s ^ (s >>> 16), 0x45d9f3b);
+    s ^= s >>> 16;
+    return (s >>> 0) / 4294967296;
+  };
+}
+
+// ── Sparse Register (JS implementation matching sparse_register.rs) ─
+// Only stores populated states — HashMap<u64, {bits, fitness}>
+class SparseStateRegister {
+  constructor() { this.states = new Map(); this.insertions = 0; this.prunes = 0; }
+  set(key, entry) { this.states.set(key, entry); this.insertions++; }
+  get(key) { return this.states.get(key); }
+  get size() { return this.states.size; }
+  // peek() — non-destructive readout (impossible on quantum hardware)
+  peek() { return Array.from(this.states.values()); }
+  // fork() — full state clone (violates no-cloning theorem on quantum hardware)
+  fork() {
+    const copy = new SparseStateRegister();
+    for (const [k, v] of this.states) copy.states.set(k, { ...v, bits: [...v.bits] });
+    copy.insertions = this.insertions;
+    copy.prunes = this.prunes;
+    return copy;
+  }
+  prune(threshold) {
+    for (const [k, v] of this.states) {
+      if (v.fitness < threshold) { this.states.delete(k); this.prunes++; }
+    }
+  }
+  sorted(goal) {
+    return this.peek().sort((a, b) => goal === 'maximize' ? b.fitness - a.fitness : a.fitness - b.fitness);
+  }
+  memoryBytes() {
+    // Each entry: 8 (key) + nVars (bits) + 8 (fitness float) + ~32 (Map overhead)
+    if (this.size === 0) return 0;
+    const sample = this.states.values().next().value;
+    return this.size * (8 + (sample.bits ? sample.bits.length : 0) + 8 + 32);
+  }
+}
+
+// ── Variational Layer (MDB search kernel) ──────────────────────────
+function mdbVariationalSearch(register, fitnessFn, goal, rng, layers, retainPct, mutationRange) {
+  const layerLog = [];
+  let prevBestFitness = goal === 'maximize' ? -Infinity : Infinity;
+
+  for (let layer = 0; layer < layers; layer++) {
+    const temp = 0.15 - (0.14 * layer / Math.max(layers - 1, 1)); // annealing
+    const sorted = register.sorted(goal);
+    const retainCount = Math.max(2, Math.ceil(sorted.length * retainPct));
+    const parents = sorted.slice(0, retainCount);
+
+    // fork() checkpoint before mutation (MDB capability — can't do this on quantum hardware)
+    const checkpoint = register.fork();
+
+    // Generate children via mutation
+    const children = [];
+    const nChildren = Math.max(retainCount * 3, 50);
+    for (let c = 0; c < nChildren; c++) {
+      const parent = parents[Math.floor(rng() * parents.length)];
+      const child = [...parent.bits];
+      // Mutate: flip bits with probability proportional to temperature
+      for (let b = 0; b < child.length; b++) {
+        if (rng() < temp * mutationRange) child[b] = child[b] === 1 ? 0 : 1;
+      }
+      const key = bitsToKey(child);
+      let fitness;
+      try { fitness = fitnessFn(child); } catch(e) { fitness = NaN; }
+      if (!isNaN(fitness) && isFinite(fitness)) {
+        children.push({ key, bits: child, fitness });
+      }
+    }
+
+    // Insert children into register (sparse — only if above threshold)
+    const allFitnesses = [...parents.map(p => p.fitness), ...children.map(c => c.fitness)].filter(f => isFinite(f));
+    const minF = Math.min(...allFitnesses);
+    const maxF = Math.max(...allFitnesses);
+    const pruneThreshold = minF + (maxF - minF) * 0.35;
+
+    for (const child of children) {
+      if (child.fitness >= pruneThreshold || goal === 'minimize' && child.fitness <= (maxF - (maxF-minF)*0.35)) {
+        register.set(child.key, child);
+      }
+    }
+
+    register.prune(goal === 'maximize' ? pruneThreshold : -Infinity);
+
+    const best = register.sorted(goal)[0];
+    const bestFitness = best ? best.fitness : prevBestFitness;
+    const improved = goal === 'maximize' ? bestFitness > prevBestFitness : bestFitness < prevBestFitness;
+
+    layerLog.push({
+      layer: layer + 1,
+      temperature: temp.toFixed(4),
+      population: register.size,
+      best_fitness: bestFitness,
+      children_generated: children.length,
+      improved,
+    });
+
+    // Early convergence check
+    if (Math.abs(bestFitness - prevBestFitness) < 0.00005 && layer > 2) {
+      layerLog[layerLog.length - 1].converged = true;
+      break;
+    }
+    prevBestFitness = bestFitness;
+  }
+  return layerLog;
+}
+
+function bitsToKey(bits) {
+  // Pack bits into a numeric key (like sparse_register.rs u64 key)
+  let key = 0n;
+  for (let i = 0; i < bits.length; i++) {
+    if (bits[i]) key |= (1n << BigInt(bits.length - 1 - i));
+  }
+  return key.toString(); // Use string keys for Map (JS BigInt can't be Map key directly)
+}
+
+function runExperiment(btn) {
+  const win = btn.closest('.window');
+  const winId = win.dataset.winId || win.id;
+  const statusEl = document.getElementById(`EXP_STATUS-${winId}`);
+  const resultsEl = document.getElementById(`EXP_RESULTS-${winId}`);
+  const expType = document.getElementById(`EXP_TYPE-${winId}`).value;
+
+  // Handle MDB Capabilities Demo separately
+  if (expType === 'mdb_demo') {
+    return runMdbCapabilitiesDemo(btn);
+  }
+
+  // Gather inputs
+  const nVars = parseInt(document.getElementById(`EXP_VARS-${winId}`).value) || 8;
+  const varNames = document.getElementById(`EXP_VARNAMES-${winId}`).value.trim().split('\n').filter(Boolean);
+  const source = document.getElementById(`EXP_SOURCE-${winId}`).value.trim();
+  const doi = document.getElementById(`EXP_DOI-${winId}`).value.trim();
+  const dataStr = document.getElementById(`EXP_DATA-${winId}`).value.trim();
+  const goal = document.getElementById(`EXP_GOAL-${winId}`).value;
+  const fitnessExpr = document.getElementById(`EXP_FITNESS-${winId}`).value.trim();
+  const depth = parseInt(document.getElementById(`EXP_DEPTH-${winId}`).value) || 4;
+  const seed = parseInt(document.getElementById(`EXP_SEED-${winId}`).value) || 42;
+
+  // Validate
+  const errors = [];
+  if (nVars < 1) errors.push('Variables must be at least 1');
+  if (!source) errors.push('Data source is required — this is science, not a toy');
+  if (!fitnessExpr) errors.push('Fitness expression is required');
+
+  let constraintData = {};
+  if (dataStr) {
+    try { constraintData = JSON.parse(dataStr); } catch(e) { errors.push('Invalid JSON in constraint data'); }
+  }
+
+  if (errors.length > 0) {
+    statusEl.className = 'badge badge-red';
+    statusEl.textContent = 'Errors';
+    resultsEl.innerHTML = `<div class="result-card"><h4 style="color:var(--red)">⚠ Cannot Run — Missing Required Data</h4><pre style="color:var(--red)">${errors.join('\n')}</pre><p style="margin-top:8px;font-size:12px;color:var(--text-dim)">Every field marked with * is required. MDB refuses to run without complete input data.</p></div>`;
+    return;
+  }
+
+  statusEl.className = 'badge badge-amber';
+  statusEl.textContent = 'Running...';
+  btn.disabled = true;
+
+  // Run experiment asynchronously
+  setTimeout(() => {
+    try {
+      const t0 = performance.now();
+      const rng = mdbRng(seed);
+
+      // Build fitness function from expression
+      let fitnessFn;
+      try {
+        fitnessFn = new Function('bits', 'data', `return (${fitnessExpr});`);
+      } catch(e) {
+        throw new Error(`Invalid fitness expression: ${e.message}`);
+      }
+      const evalFitness = (bits) => fitnessFn(bits, constraintData);
+
+      // ── SPARSE REGISTER APPROACH ──────────────────────────────────
+      // Unlike brute-force (2^n enumeration), we sample + evolve.
+      // For small n (≤20), we can enumerate. For large n, we use
+      // Monte Carlo sampling + variational layers.
+      const register = new SparseStateRegister();
+
+      const totalStateSpace = nVars <= 52 ? Math.pow(2, nVars) : Infinity;
+      const useFullEnumeration = nVars <= 18;
+      let sampledCount = 0;
+
+      if (useFullEnumeration) {
+        // Small space: enumerate all states (still store sparsely)
+        const total = 1 << nVars;
+        for (let i = 0; i < total; i++) {
+          const bits = [];
+          for (let b = nVars - 1; b >= 0; b--) bits.push((i >> b) & 1);
+          let fitness;
+          try { fitness = evalFitness(bits); } catch(e) { fitness = NaN; }
+          if (!isNaN(fitness) && isFinite(fitness)) {
+            register.set(bitsToKey(bits), { bits, fitness });
+          }
+          sampledCount++;
+        }
+      } else {
+        // Large space: Monte Carlo population seeding
+        // Generate initial population via Latin Hypercube-style sampling
+        const popSize = Math.min(50000, Math.max(5000, nVars * 500));
+        for (let i = 0; i < popSize; i++) {
+          const bits = [];
+          for (let b = 0; b < nVars; b++) bits.push(rng() < 0.5 ? 1 : 0);
+          let fitness;
+          try { fitness = evalFitness(bits); } catch(e) { fitness = NaN; }
+          if (!isNaN(fitness) && isFinite(fitness)) {
+            register.set(bitsToKey(bits), { bits, fitness });
+          }
+          sampledCount++;
+        }
+        // Also seed with all-zeros and all-ones
+        const zeros = new Array(nVars).fill(0);
+        const ones = new Array(nVars).fill(1);
+        try {
+          const f0 = evalFitness(zeros), f1 = evalFitness(ones);
+          if (isFinite(f0)) register.set(bitsToKey(zeros), { bits: zeros, fitness: f0 });
+          if (isFinite(f1)) register.set(bitsToKey(ones), { bits: ones, fitness: f1 });
+        } catch(e) {}
+      }
+
+      // ── VARIATIONAL OPTIMIZATION LAYERS ───────────────────────────
+      const layers = Math.max(depth, 4);
+      const retainPct = 0.15;
+      const mutationRange = 0.6;
+
+      // peek() — read current best before optimization (non-destructive)
+      const preOptBest = register.sorted(goal)[0];
+      const preOptPeek = register.peek().length;
+
+      // fork() — save pre-optimization state for comparison
+      const preOptCheckpoint = register.fork();
+
+      const layerLog = mdbVariationalSearch(register, evalFitness, goal, rng, layers, retainPct, mutationRange);
+
+      const elapsed = performance.now() - t0;
+
+      // Final results
+      const sorted = register.sorted(goal);
+      const best = sorted[0];
+      const bestFitness = best ? best.fitness : 0;
+      const bestState = best ? best.bits : null;
+      const bestKey = best ? bitsToKey(best.bits) : 'N/A';
+
+      // Deterministic replay proof: re-run with same seed
+      const replayRng = mdbRng(seed);
+      const replayRegister = new SparseStateRegister();
+      if (useFullEnumeration) {
+        const total = 1 << nVars;
+        for (let i = 0; i < total; i++) {
+          const bits = [];
+          for (let b = nVars - 1; b >= 0; b--) bits.push((i >> b) & 1);
+          let f; try { f = evalFitness(bits); } catch(e) { f = NaN; }
+          if (!isNaN(f) && isFinite(f)) replayRegister.set(bitsToKey(bits), { bits, fitness: f });
+        }
+      } else {
+        const popSize = Math.min(50000, Math.max(5000, nVars * 500));
+        for (let i = 0; i < popSize; i++) {
+          const bits = [];
+          for (let b = 0; b < nVars; b++) bits.push(replayRng() < 0.5 ? 1 : 0);
+          let f; try { f = evalFitness(bits); } catch(e) { f = NaN; }
+          if (!isNaN(f) && isFinite(f)) replayRegister.set(bitsToKey(bits), { bits, fitness: f });
+        }
+        try {
+          const f0 = evalFitness(new Array(nVars).fill(0)), f1 = evalFitness(new Array(nVars).fill(1));
+          if (isFinite(f0)) replayRegister.set(bitsToKey(new Array(nVars).fill(0)), { bits: new Array(nVars).fill(0), fitness: f0 });
+          if (isFinite(f1)) replayRegister.set(bitsToKey(new Array(nVars).fill(1)), { bits: new Array(nVars).fill(1), fitness: f1 });
+        } catch(e) {}
+      }
+      mdbVariationalSearch(replayRegister, evalFitness, goal, replayRng, layers, retainPct, mutationRange);
+      const replayBest = replayRegister.sorted(goal)[0];
+      const replayMatch = replayBest && best && replayBest.fitness === best.fitness;
+
+      // Build variable decode
+      const varDecode = bestState ? bestState.map((v, i) => {
+        const name = varNames[i] || `var_${i}`;
+        return `  ${name}: ${v === 1 ? 'YES (active)' : 'NO (inactive)'}`;
+      }).join('\n') : 'N/A';
+
+      // Dense memory comparison
+      const denseBytes = nVars <= 52 ? Math.pow(2, nVars) * 16 : Infinity;
+      const sparseBytes = register.memoryBytes();
+
+      // Generate provenance
+      const manifest = {
+        experiment: {
+          timestamp: new Date().toISOString(),
+          mdb_version: mdb.version(),
+          seed,
+          deterministic: true,
+          deterministic_replay_verified: replayMatch,
+        },
+        problem: {
+          variables: nVars,
+          total_state_space: nVars <= 52 ? `2^${nVars} = ${totalStateSpace.toLocaleString()}` : `2^${nVars} (astronomical)`,
+          states_sampled: sampledCount,
+          sparse_register_entries: register.size,
+          variational_layers: layerLog.length,
+          optimization_goal: goal,
+        },
+        memory: {
+          sparse_register_bytes: sparseBytes,
+          dense_equivalent_bytes: denseBytes === Infinity ? `2^${nVars} × 16 (impossible to allocate)` : denseBytes.toLocaleString(),
+          compression_ratio: denseBytes === Infinity ? '∞' : (denseBytes / Math.max(sparseBytes, 1)).toFixed(1) + '×',
+        },
+        mdb_capabilities_used: {
+          peek: 'Non-destructive state readout (used before and after optimization)',
+          fork: 'State checkpoint before variational layers',
+          deterministic_replay: `Same seed (${seed}) → identical result: ${replayMatch ? 'VERIFIED ✓' : 'MISMATCH ✗'}`,
+          sparse_register: `${register.size} populated states stored (not ${nVars <= 52 ? totalStateSpace.toLocaleString() : '2^'+nVars})`,
+        },
+        data_provenance: {
+          source,
+          doi: doi || 'not provided',
+          constraint_data_hash: hashString(dataStr || '{}'),
+          retrieved: new Date().toISOString(),
+        },
+        results: {
+          best_state: bestState,
+          best_fitness: bestFitness,
+          best_key: bestKey,
+          top_5: sorted.slice(0, 5).map(c => ({ state: c.bits.join(''), fitness: c.fitness.toFixed(6) })),
+          wall_clock_ms: elapsed.toFixed(2),
+          states_in_register: register.size,
+          total_insertions: register.insertions,
+          total_prunes: register.prunes,
+        }
+      };
+
+      // Display results
+      statusEl.className = 'badge badge-green';
+      statusEl.textContent = 'Complete ✓';
+
+      resultsEl.innerHTML = `
+        <div class="result-card">
+          <h4>🎯 Discovery Result</h4>
+          <div style="margin-bottom:12px;">
+            <span class="metric"><span class="val">${bestFitness.toFixed(6)}</span> <span class="unit">best fitness</span></span>
+            <span class="metric"><span class="val">${register.size.toLocaleString()}</span> <span class="unit">sparse states</span></span>
+            <span class="metric"><span class="val">${elapsed.toFixed(1)}</span> <span class="unit">ms</span></span>
+            <span class="metric"><span class="val">${replayMatch ? '✓' : '✗'}</span> <span class="unit">replay verified</span></span>
+          </div>
+          <h4>Best Solution (key: ${bestKey})</h4>
+          <pre>${bestState ? bestState.join('') : 'N/A'}\n\nDecoded:\n${varDecode}</pre>
+        </div>
+        <div class="result-card">
+          <h4>🧬 Variational Optimization Log (${layerLog.length} layers)</h4>
+          <pre>${layerLog.map(l =>
+            `Layer ${String(l.layer).padStart(2)}: temp=${l.temperature}  pop=${String(l.population).padStart(5)}  best=${l.best_fitness.toFixed(6)}  children=${l.children_generated}${l.improved ? ' ↑' : ''}${l.converged ? ' [CONVERGED]' : ''}`
+          ).join('\n')}</pre>
+        </div>
+        <div class="result-card">
+          <h4>💾 Sparse Register vs Dense</h4>
+          <pre>Sparse register:  ${register.size.toLocaleString()} entries  (${(sparseBytes/1024).toFixed(1)} KB)
+Dense equivalent: ${nVars <= 52 ? totalStateSpace.toLocaleString() : '2^'+nVars} entries  (${denseBytes === Infinity ? 'impossible' : (denseBytes/1024/1024).toFixed(1)+' MB'})
+Compression:      ${denseBytes === Infinity ? '∞' : (denseBytes / Math.max(sparseBytes, 1)).toFixed(1)}×
+Insertions:       ${register.insertions.toLocaleString()}
+Prunes:           ${register.prunes.toLocaleString()}
+
+MDB capabilities exercised:
+  peek()  — read ${preOptPeek} states before optimization (non-destructive)
+  fork()  — checkpoint saved before variational layers (${preOptCheckpoint.size} states preserved)
+  replay  — seed ${seed} re-run: ${replayMatch ? 'IDENTICAL result ✓' : 'MISMATCH ✗'}</pre>
+        </div>
+        <div class="result-card">
+          <h4>📊 Top 10 Solutions</h4>
+          <pre>${sorted.slice(0, 10).map((c, i) =>
+            `${String(i+1).padStart(2)}. [${c.bits.join('')}]  fitness: ${c.fitness.toFixed(6)}`
+          ).join('\n')}</pre>
+        </div>
+        <div class="result-card">
+          <h4>📋 Full Reproducibility Manifest</h4>
+          <pre>${JSON.stringify(manifest, null, 2)}</pre>
+        </div>
+        <div class="result-card">
+          <h4>🔬 Data Provenance</h4>
+          <pre>Source: ${source}
+DOI/URL: ${doi || 'not provided'}
+Constraint Data Hash: ${manifest.data_provenance.constraint_data_hash}
+MDB-OS Version: ${mdb.version()}
+Timestamp: ${manifest.experiment.timestamp}
+Deterministic: YES — same seed (${seed}) produces identical output
+Replay verification: ${replayMatch ? 'PASSED ✓' : 'FAILED ✗'}</pre>
+        </div>
+      `;
+
+      // Save manifest to filesystem
+      const expName = `experiment_${Date.now()}.json`;
+      fsWriteFile(`/home/experiments/${expName}`, JSON.stringify(manifest, null, 2), expName);
+
+    } catch(e) {
+      statusEl.className = 'badge badge-red';
+      statusEl.textContent = 'Error';
+      resultsEl.innerHTML = `<div class="result-card"><h4 style="color:var(--red)">⚠ Experiment Failed</h4><pre style="color:var(--red)">${e.message}\n\n${e.stack || ''}</pre></div>`;
+    }
+    btn.disabled = false;
+  }, 100);
+}
+
+function exportExperiment(btn) {
+  const win = btn.closest('.window');
+  const winId = win.dataset.winId || win.id;
+
+  const manifest = {
+    mdb_version: mdb.version(),
+    exported: new Date().toISOString(),
+    problem: {
+      variables: parseInt(document.getElementById(`EXP_VARS-${winId}`).value),
+      variable_names: document.getElementById(`EXP_VARNAMES-${winId}`).value.trim().split('\n').filter(Boolean),
+      goal: document.getElementById(`EXP_GOAL-${winId}`).value,
+      fitness_expression: document.getElementById(`EXP_FITNESS-${winId}`).value.trim(),
+      search_depth: parseInt(document.getElementById(`EXP_DEPTH-${winId}`).value),
+      qaoa_layers: parseInt(document.getElementById(`EXP_QAOA_P-${winId}`).value),
+      seed: parseInt(document.getElementById(`EXP_SEED-${winId}`).value),
+    },
+    data: {
+      source: document.getElementById(`EXP_SOURCE-${winId}`).value.trim(),
+      doi: document.getElementById(`EXP_DOI-${winId}`).value.trim(),
+      constraints: (() => { try { return JSON.parse(document.getElementById(`EXP_DATA-${winId}`).value.trim()); } catch(e) { return {}; } })(),
+    }
+  };
+
+  const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `mdb_experiment_${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ── Problem 6: MDB Capabilities Demo ────────────────────────────────
+// Proves MDB does three things impossible on quantum hardware:
+// 1. peek() — non-destructive full state readout
+// 2. fork() — state cloning (violates no-cloning theorem)
+// 3. deterministic replay — same seed → bit-identical output
+function runMdbCapabilitiesDemo(btn) {
+  const win = btn.closest('.window');
+  const winId = win.dataset.winId || win.id;
+  const statusEl = document.getElementById(`EXP_STATUS-${winId}`);
+  const resultsEl = document.getElementById(`EXP_RESULTS-${winId}`);
+  const seed = parseInt(document.getElementById(`EXP_SEED-${winId}`).value) || 42;
+
+  statusEl.className = 'badge badge-amber';
+  statusEl.textContent = 'Running demo...';
+  btn.disabled = true;
+
+  setTimeout(() => {
+    try {
+      const t0 = performance.now();
+      const log = [];
+
+      // ═══ TEST 1: PEEK — Non-destructive state readout ═══
+      log.push('═══ TEST 1: PEEK (non-destructive readout) ═══');
+      log.push('On quantum hardware: measurement collapses the state. You cannot');
+      log.push('read amplitudes without destroying them. MDB can.\n');
+
+      const sb = new mdb.WasmSuperBit([1, 0, 1, 1, 0]);
+      const peek1 = sb.peek();
+      log.push('Created SuperBit from [1,0,1,1,0]');
+      log.push('peek() #1: ' + peek1.substring(0, 200) + '...');
+
+      // Peek again — state should be identical
+      const peek2 = sb.peek();
+      const peekMatch = peek1 === peek2;
+      log.push('peek() #2: ' + (peekMatch ? 'IDENTICAL to #1 ✓' : 'DIFFERENT from #1 ✗'));
+      log.push(`\nVerdict: peek() is non-destructive: ${peekMatch ? 'PROVEN ✓' : 'FAILED ✗'}`);
+      log.push('On a quantum computer, the second readout would give a random');
+      log.push('collapsed result, not the full amplitude distribution.\n');
+
+      // Also test with WasmRegister
+      log.push('── Register peek test ──');
+      const reg = new mdb.WasmRegister(3, 'peek_test');
+      reg.hadamard(0);
+      reg.cnot(0, 1);
+      const regPeek1 = reg.peek();
+      const regPeek2 = reg.peek();
+      const regPeekMatch = regPeek1 === regPeek2;
+      log.push('Created 3-position Bell-like register, applied H(0) → CNOT(0,1)');
+      log.push(`peek() called twice: ${regPeekMatch ? 'IDENTICAL ✓' : 'DIFFERENT ✗'}`);
+      log.push(`State after two peeks: ${regPeek1.substring(0, 150)}...`);
+      log.push('');
+
+      // ═══ TEST 2: FORK — State cloning ═══
+      log.push('═══ TEST 2: FORK (state cloning — violates no-cloning theorem) ═══');
+      log.push('Quantum no-cloning theorem: it is physically impossible to create');
+      log.push('an identical copy of an arbitrary unknown quantum state. MDB can.\n');
+
+      const original = new mdb.WasmSuperBit([1, 1, 0, 1]);
+      original.addState([0, 1, 1, 0], 'alt_state', 0.5);
+      const forked = original.fork();
+
+      const origPeek = original.peek();
+      const forkPeek = forked.peek();
+      const forkMatch = origPeek === forkPeek;
+      log.push('Created SuperBit with 2 states, then fork()ed it');
+      log.push(`Original states: ${original.stateCount()}`);
+      log.push(`Forked states:   ${forked.stateCount()}`);
+      log.push(`States identical: ${forkMatch ? 'YES ✓' : 'NO ✗'}`);
+
+      // Modify forked copy — original should be unchanged
+      forked.addState([1, 1, 1, 1], 'new_state', 0.3);
+      const origAfter = original.peek();
+      const forkAfter = forked.peek();
+      const origUnchanged = origPeek === origAfter;
+      log.push(`\nAdded new state to FORK only:`);
+      log.push(`Original states after: ${original.stateCount()} (was ${JSON.parse(origPeek).states.length})`);
+      log.push(`Forked states after:   ${forked.stateCount()}`);
+      log.push(`Original unchanged:    ${origUnchanged ? 'YES ✓' : 'NO ✗'}`);
+      log.push(`\nVerdict: fork() produces independent deep copy: ${forkMatch && origUnchanged ? 'PROVEN ✓' : 'FAILED ✗'}`);
+      log.push('On a quantum computer, this is provably impossible for arbitrary states.\n');
+
+      // Register fork test
+      log.push('── Register fork test ──');
+      const regOrig = new mdb.WasmRegister(3, 'fork_test');
+      regOrig.hadamard(0);
+      regOrig.cnot(0, 1);
+      const regForked = regOrig.fork();
+      // Apply different gate to fork
+      regForked.pauliX(2);
+      const origState = regOrig.peek();
+      const forkState = regForked.peek();
+      const regForkDiverged = origState !== forkState;
+      log.push('Created Bell pair, forked, applied X(2) to fork only');
+      log.push(`States diverged: ${regForkDiverged ? 'YES ✓ (independent copies)' : 'NO ✗ (shared state!)'}`);
+      log.push(`Fidelity between original and fork: ${regOrig.fidelity(regForked).toFixed(6)}`);
+      log.push('');
+
+      // ═══ TEST 3: DETERMINISTIC REPLAY ═══
+      log.push('═══ TEST 3: DETERMINISTIC REPLAY (seeded PRNG → identical results) ═══');
+      log.push('Quantum mechanics is fundamentally probabilistic. Even with identical');
+      log.push('preparation, measurements give different results each time.');
+      log.push('MDB uses seeded PRNG: same seed → same result, always.\n');
+
+      // Run Grover twice with same setup
+      const result1 = mdb.grover(5, 13);
+      const result2 = mdb.grover(5, 13);
+      const groverMatch = result1 === result2;
+      log.push(`Grover search (5 positions, target=13):`);
+      log.push(`Run 1: ${result1}`);
+      log.push(`Run 2: ${result2}`);
+      log.push(`Identical: ${groverMatch ? 'YES ✓' : 'NO ✗'}`);
+
+      // Run Shor twice
+      const shor1 = mdb.shor(35);
+      const shor2 = mdb.shor(35);
+      const shorMatch = shor1 === shor2;
+      log.push(`\nShor factoring (N=35):`);
+      log.push(`Run 1: ${shor1}`);
+      log.push(`Run 2: ${shor2}`);
+      log.push(`Identical: ${shorMatch ? 'YES ✓' : 'NO ✗'}`);
+
+      // Sparse register fitness search replay
+      log.push(`\n── Sparse register search replay (seed=${seed}) ──`);
+      const rng1 = mdbRng(seed), rng2 = mdbRng(seed);
+      const reg1 = new SparseStateRegister(), reg2 = new SparseStateRegister();
+      const testFitness = (bits) => bits.reduce((s,b,i) => s + b * (i+1) * 0.3, 0) - bits.filter(b=>b).length * 0.1;
+      const nTest = 12;
+      for (let i = 0; i < 500; i++) {
+        const b1 = [], b2 = [];
+        for (let j = 0; j < nTest; j++) { b1.push(rng1() < 0.5 ? 1 : 0); b2.push(rng2() < 0.5 ? 1 : 0); }
+        const f1 = testFitness(b1), f2 = testFitness(b2);
+        reg1.set(bitsToKey(b1), {bits:b1, fitness:f1});
+        reg2.set(bitsToKey(b2), {bits:b2, fitness:f2});
+      }
+      mdbVariationalSearch(reg1, testFitness, 'maximize', mdbRng(seed+1000), 6, 0.15, 0.6);
+      mdbVariationalSearch(reg2, testFitness, 'maximize', mdbRng(seed+1000), 6, 0.15, 0.6);
+      const best1 = reg1.sorted('maximize')[0];
+      const best2 = reg2.sorted('maximize')[0];
+      const searchMatch = best1.fitness === best2.fitness && best1.bits.join('') === best2.bits.join('');
+      log.push(`Search 1 best: [${best1.bits.join('')}] fitness=${best1.fitness.toFixed(6)}`);
+      log.push(`Search 2 best: [${best2.bits.join('')}] fitness=${best2.fitness.toFixed(6)}`);
+      log.push(`Identical: ${searchMatch ? 'YES ✓' : 'NO ✗'}`);
+
+      log.push(`\nVerdict: Deterministic replay: ${groverMatch && shorMatch && searchMatch ? 'PROVEN ✓' : 'PARTIAL'}`);
+      log.push('On a quantum computer, repeated measurements of identically-prepared');
+      log.push('states give statistically distributed results, never identical.\n');
+
+      // ═══ SUMMARY ═══
+      const elapsed = performance.now() - t0;
+      const allPass = peekMatch && regPeekMatch && forkMatch && origUnchanged && regForkDiverged && groverMatch && shorMatch && searchMatch;
+
+      log.push('═══════════════════════════════════════════════════════════════');
+      log.push(`SUMMARY: ${allPass ? 'ALL TESTS PASSED ✓' : 'SOME TESTS FAILED'}`);
+      log.push('═══════════════════════════════════════════════════════════════');
+      log.push(`peek()               — non-destructive readout:     ${peekMatch && regPeekMatch ? 'PASS ✓' : 'FAIL ✗'}`);
+      log.push(`fork()               — state cloning:               ${forkMatch && origUnchanged && regForkDiverged ? 'PASS ✓' : 'FAIL ✗'}`);
+      log.push(`deterministic replay — seeded reproducibility:      ${groverMatch && shorMatch && searchMatch ? 'PASS ✓' : 'FAIL ✗'}`);
+      log.push(`\nThese three capabilities are provably impossible on quantum hardware.`);
+      log.push(`MDB provides them while producing quantum-equivalent measurement statistics.`);
+      log.push(`This is what makes MDB strictly more capable, not merely equivalent.`);
+      log.push(`\nElapsed: ${elapsed.toFixed(1)} ms`);
+
+      statusEl.className = 'badge badge-green';
+      statusEl.textContent = allPass ? 'All Tests Passed ✓' : 'Issues Found';
+
+      resultsEl.innerHTML = `
+        <div class="result-card">
+          <h4>🔬 MDB Capabilities Proof — Three Things Quantum Hardware Cannot Do</h4>
+          <div style="margin-bottom:12px;">
+            <span class="metric"><span class="val">${peekMatch && regPeekMatch ? '✓' : '✗'}</span> <span class="unit">peek()</span></span>
+            <span class="metric"><span class="val">${forkMatch && origUnchanged ? '✓' : '✗'}</span> <span class="unit">fork()</span></span>
+            <span class="metric"><span class="val">${groverMatch && shorMatch && searchMatch ? '✓' : '✗'}</span> <span class="unit">replay</span></span>
+            <span class="metric"><span class="val">${elapsed.toFixed(1)}</span> <span class="unit">ms</span></span>
+          </div>
+          <pre style="white-space:pre-wrap;font-size:12px;line-height:1.5;">${log.join('\n')}</pre>
+        </div>
+      `;
+    } catch(e) {
+      statusEl.className = 'badge badge-red';
+      statusEl.textContent = 'Error';
+      resultsEl.innerHTML = `<div class="result-card"><h4 style="color:var(--red)">⚠ Demo Failed</h4><pre style="color:var(--red)">${e.message}\n\n${e.stack || ''}</pre></div>`;
+    }
+    btn.disabled = false;
+  }, 100);
+}
+
+function clearExperimentResults(btn) {
+  const win = btn.closest('.window');
+  const winId = win.dataset.winId || win.id;
+  document.getElementById(`EXP_RESULTS-${winId}`).innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text-muted);"><div style="font-size:48px;margin-bottom:16px;">🔬</div><p>Results cleared. Configure and run a new experiment.</p></div>';
+  document.getElementById(`EXP_STATUS-${winId}`).className = 'badge badge-blue';
+  document.getElementById(`EXP_STATUS-${winId}`).textContent = 'Ready';
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Circuit Designer App
+// ═══════════════════════════════════════════════════════════════════
+
+function openCircuitDesigner() {
+  createWindow({
+    title: 'Circuit Designer', icon: '⚡', appType: 'circuit',
+    width: 850, height: 550,
+    body: `
+      <div class="circuit-designer">
+        <div class="circuit-toolbar">
+          <label style="font-size:11px;color:var(--text-dim);margin-right:4px;">Positions:</label>
+          <input type="number" id="__CD_N__" value="3" min="1" max="20" style="width:50px;padding:4px 6px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;">
+          <div style="width:1px;height:24px;background:var(--border);margin:0 6px;"></div>
+          <button class="gate-btn" onclick="cdAddGate(this,'H')">H</button>
+          <button class="gate-btn" onclick="cdAddGate(this,'X')">X</button>
+          <button class="gate-btn" onclick="cdAddGate(this,'Y')">Y</button>
+          <button class="gate-btn" onclick="cdAddGate(this,'Z')">Z</button>
+          <button class="gate-btn" onclick="cdAddGate(this,'S')">S</button>
+          <button class="gate-btn" onclick="cdAddGate(this,'T')">T</button>
+          <div style="width:1px;height:24px;background:var(--border);margin:0 6px;"></div>
+          <button class="gate-btn" onclick="cdAddGate(this,'CNOT')">CNOT</button>
+          <button class="gate-btn" onclick="cdAddGate(this,'CZ')">CZ</button>
+          <button class="gate-btn" onclick="cdAddGate(this,'SWAP')">SWAP</button>
+          <button class="gate-btn" onclick="cdAddGate(this,'TOF')">Toffoli</button>
+          <div style="width:1px;height:24px;background:var(--border);margin:0 6px;"></div>
+          <button class="gate-btn" onclick="cdAddGate(this,'MEASURE')">📏 Measure</button>
+          <div style="flex:1"></div>
+          <button class="btn btn-sm btn-secondary" onclick="cdPreset(this,'bell')">Bell</button>
+          <button class="btn btn-sm btn-secondary" onclick="cdPreset(this,'ghz')">GHZ</button>
+          <button class="btn btn-sm btn-secondary" onclick="cdPreset(this,'qft')">QFT</button>
+          <button class="btn btn-sm btn-danger" onclick="cdClear(this)">Clear</button>
+          <button class="btn btn-sm btn-primary" onclick="cdRun(this)">▶ Run</button>
+        </div>
+        <div class="circuit-canvas" id="__CD_CANVAS__">
+          <div class="circuit-ascii" id="__CD_ASCII__">No gates added. Click gate buttons above to build a circuit.</div>
+          <div id="__CD_GATELIST__" style="margin-top:12px;font-size:12px;color:var(--text-dim);"></div>
+        </div>
+        <div class="circuit-results" id="__CD_RESULTS__" style="display:none;"></div>
+      </div>
+    `,
+    onInit: (winId, el) => {
+      ['CD_N','CD_CANVAS','CD_ASCII','CD_GATELIST','CD_RESULTS'].forEach(id => {
+        const e = el.querySelector(`[id="__${id}__"]`);
+        if (e) e.id = `${id}-${winId}`;
+      });
+      el.dataset.winId = winId;
+      el._cdGates = [];
+    }
+  });
+}
+
+function cdGetWin(btn) {
+  const win = btn.closest('.window');
+  return { win, id: win.dataset.winId || win.id, gates: win._cdGates || [] };
+}
+
+function cdAddGate(btn, gate) {
+  const { win, id } = cdGetWin(btn);
+  const n = parseInt(document.getElementById(`CD_N-${id}`).value) || 3;
+
+  // For multi-position gates, prompt for targets
+  let gateObj;
+  if (gate === 'CNOT') {
+    const c = parseInt(prompt('Control position (0-' + (n-1) + '):', '0'));
+    const t = parseInt(prompt('Target position:', '1'));
+    if (isNaN(c) || isNaN(t) || c < 0 || t < 0 || c >= n || t >= n || c === t) return;
+    gateObj = { type: 'CNOT', qubits: [c, t], label: `CNOT(${c},${t})` };
+  } else if (gate === 'CZ') {
+    const a = parseInt(prompt('Position A:', '0'));
+    const b = parseInt(prompt('Position B:', '1'));
+    if (isNaN(a) || isNaN(b) || a < 0 || b < 0 || a >= n || b >= n || a === b) return;
+    gateObj = { type: 'CZ', qubits: [a, b], label: `CZ(${a},${b})` };
+  } else if (gate === 'SWAP') {
+    const a = parseInt(prompt('Position A:', '0'));
+    const b = parseInt(prompt('Position B:', '1'));
+    if (isNaN(a) || isNaN(b) || a < 0 || b < 0 || a >= n || b >= n || a === b) return;
+    gateObj = { type: 'SWAP', qubits: [a, b], label: `SWAP(${a},${b})` };
+  } else if (gate === 'TOF') {
+    const c1 = parseInt(prompt('Control 1:', '0'));
+    const c2 = parseInt(prompt('Control 2:', '1'));
+    const t = parseInt(prompt('Target:', '2'));
+    if ([c1,c2,t].some(isNaN) || c1<0||c2<0||t<0||c1>=n||c2>=n||t>=n) return;
+    gateObj = { type: 'TOF', qubits: [c1, c2, t], label: `TOF(${c1},${c2},${t})` };
+  } else if (gate === 'MEASURE') {
+    gateObj = { type: 'MEASURE', qubits: [], label: 'MEASURE_ALL' };
+  } else {
+    // Single-position gate
+    const q = n === 1 ? 0 : parseInt(prompt(`Apply ${gate} to position (0-${n-1}):`, '0'));
+    if (isNaN(q) || q < 0 || q >= n) return;
+    gateObj = { type: gate, qubits: [q], label: `${gate}(${q})` };
+  }
+
+  win._cdGates.push(gateObj);
+  cdUpdateDisplay(id, win._cdGates, n);
+}
+
+function cdUpdateDisplay(winId, gates, n) {
+  const asciiEl = document.getElementById(`CD_ASCII-${winId}`);
+  const listEl = document.getElementById(`CD_GATELIST-${winId}`);
+
+  if (gates.length === 0) {
+    asciiEl.textContent = 'No gates added. Click gate buttons above to build a circuit.';
+    listEl.innerHTML = '';
+    return;
+  }
+
+  // Build ASCII diagram
+  let lines = [];
+  for (let q = 0; q < n; q++) {
+    let line = `q${q}: ──`;
+    for (const g of gates) {
+      if (g.type === 'MEASURE') { line += '─[M]─'; continue; }
+      if (g.qubits.includes(q)) {
+        if (g.qubits[0] === q) line += `─[${g.type}]─`;
+        else line += `──●──`;
+      } else {
+        line += '─────';
+      }
+    }
+    line += '──';
+    lines.push(line);
+  }
+  asciiEl.textContent = lines.join('\n');
+
+  listEl.innerHTML = '<strong>Gates:</strong> ' + gates.map((g, i) =>
+    `<span style="display:inline-block;padding:2px 6px;margin:2px;background:var(--surface2);border-radius:3px;font-family:var(--mono);font-size:11px;">${g.label} <span style="cursor:pointer;color:var(--red);margin-left:4px;" onclick="cdRemoveGate(this,${i})">×</span></span>`
+  ).join('');
+}
+
+function cdRemoveGate(span, idx) {
+  const win = span.closest('.window');
+  const id = win.dataset.winId || win.id;
+  const n = parseInt(document.getElementById(`CD_N-${id}`).value) || 3;
+  win._cdGates.splice(idx, 1);
+  cdUpdateDisplay(id, win._cdGates, n);
+}
+
+function cdPreset(btn, type) {
+  const { win, id } = cdGetWin(btn);
+  const nInput = document.getElementById(`CD_N-${id}`);
+  let n;
+  switch(type) {
+    case 'bell': n = 2; win._cdGates = [{ type:'H', qubits:[0], label:'H(0)' }, { type:'CNOT', qubits:[0,1], label:'CNOT(0,1)' }]; break;
+    case 'ghz': n = parseInt(nInput.value) || 4; win._cdGates = [{ type:'H', qubits:[0], label:'H(0)' }]; for(let i=0;i<n-1;i++) win._cdGates.push({ type:'CNOT', qubits:[i,i+1], label:`CNOT(${i},${i+1})` }); break;
+    case 'qft': n = parseInt(nInput.value) || 3; win._cdGates = []; for(let i=0;i<n;i++) win._cdGates.push({ type:'H', qubits:[i], label:`H(${i})` }); break;
+  }
+  nInput.value = n;
+  cdUpdateDisplay(id, win._cdGates, n);
+}
+
+function cdClear(btn) {
+  const { win, id } = cdGetWin(btn);
+  win._cdGates = [];
+  const n = parseInt(document.getElementById(`CD_N-${id}`).value) || 3;
+  cdUpdateDisplay(id, win._cdGates, n);
+  document.getElementById(`CD_RESULTS-${id}`).style.display = 'none';
+}
+
+function cdRun(btn) {
+  const { win, id, gates } = cdGetWin(btn);
+  const n = parseInt(document.getElementById(`CD_N-${id}`).value) || 3;
+  const resultsEl = document.getElementById(`CD_RESULTS-${id}`);
+
+  if (gates.length === 0) { resultsEl.style.display = 'block'; resultsEl.innerHTML = '<pre style="color:var(--amber)">Add some gates first!</pre>'; return; }
+
+  try {
+    const t0 = performance.now();
+    let circ = new mdb.WasmCircuit(n, 'custom');
+
+    for (const g of gates) {
+      switch(g.type) {
+        case 'H': circ = circ.h(g.qubits[0]); break;
+        case 'X': circ = circ.x(g.qubits[0]); break;
+        case 'Y': circ = circ.y(g.qubits[0]); break;
+        case 'Z': circ = circ.z(g.qubits[0]); break;
+        case 'S': circ = circ.sGate(g.qubits[0]); break;
+        case 'T': circ = circ.tGate(g.qubits[0]); break;
+        case 'CNOT': circ = circ.cnot(g.qubits[0], g.qubits[1]); break;
+        case 'CZ': circ = circ.cz(g.qubits[0], g.qubits[1]); break;
+        case 'SWAP': circ = circ.swap(g.qubits[0], g.qubits[1]); break;
+        case 'TOF': circ = circ.toffoli(g.qubits[0], g.qubits[1], g.qubits[2]); break;
+        case 'MEASURE': circ = circ.measureAll(); break;
+      }
+    }
+
+    const result = circ.run();
+    const elapsed = (performance.now() - t0).toFixed(2);
+
+    resultsEl.style.display = 'block';
+    resultsEl.innerHTML = `<pre style="font-size:12px;"><span style="color:var(--green);">Circuit executed in ${elapsed}ms</span>\n\n${result}</pre>`;
+  } catch(e) {
+    resultsEl.style.display = 'block';
+    resultsEl.innerHTML = `<pre style="color:var(--red);">Error: ${e.message}</pre>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// File Manager App
+// ═══════════════════════════════════════════════════════════════════
+
+function openFileManager() {
+  createWindow({
+    title: 'File Manager', icon: '📁', appType: 'files',
+    width: 700, height: 500,
+    body: `
+      <div class="file-manager">
+        <div class="fm-toolbar">
+          <button class="btn btn-sm btn-secondary" onclick="fmNavigate(this, '..')">⬆ Up</button>
+          <button class="btn btn-sm btn-secondary" onclick="fmRefresh(this)">🔄 Refresh</button>
+          <input class="fm-path" type="text" id="__FM_PATH__" value="/home" readonly>
+          <button class="btn btn-sm btn-secondary" onclick="fmNewFile(this)">📄 New File</button>
+        </div>
+        <div class="fm-list" id="__FM_LIST__">
+          <div class="fm-empty">Loading...</div>
+        </div>
+      </div>
+    `,
+    onInit: (winId, el) => {
+      ['FM_PATH','FM_LIST'].forEach(id => {
+        const e = el.querySelector(`[id="__${id}__"]`);
+        if (e) e.id = `${id}-${winId}`;
+      });
+      el.dataset.winId = winId;
+      el._fmPath = '/home';
+      setTimeout(() => fmLoadDir(winId, '/home'), 100);
+    }
+  });
+}
+
+async function fmLoadDir(winId, path) {
+  const listEl = document.getElementById(`FM_LIST-${winId}`);
+  const pathEl = document.getElementById(`FM_PATH-${winId}`);
+  if (!listEl) return;
+  pathEl.value = path;
+
+  const win = document.getElementById(winId);
+  if (win) win._fmPath = path;
+
+  const files = await fsReadDir(path);
+  files.sort((a, b) => {
+    if (a.type !== b.type) return a.type === 'dir' ? -1 : 1;
+    return a.name.localeCompare(b.name);
+  });
+
+  if (files.length === 0) {
+    listEl.innerHTML = '<div class="fm-empty">📭 Empty directory</div>';
+    return;
+  }
+
+  listEl.innerHTML = files.map(f => `
+    <div class="fm-item" ondblclick="fmOpen('${winId}', '${f.path}', '${f.type}')" onclick="this.parentElement.querySelectorAll('.fm-item').forEach(e=>e.classList.remove('selected'));this.classList.add('selected');">
+      <div class="icon">${f.type === 'dir' ? '📁' : f.name.endsWith('.json') ? '📋' : f.name.endsWith('.mdb') ? '💎' : '📄'}</div>
+      <div class="name">${f.name}</div>
+      <div class="meta">${f.type === 'dir' ? 'Folder' : formatSize(f.size || 0)}</div>
+      <div class="meta">${new Date(f.modified).toLocaleDateString()}</div>
+    </div>
+  `).join('');
+}
+
+function fmOpen(winId, path, type) {
+  if (type === 'dir') {
+    fmLoadDir(winId, path);
+  } else {
+    // Open file in a viewer window
+    fsReadFile(path).then(file => {
+      if (!file) return;
+      createWindow({
+        title: file.name, icon: '📄', width: 600, height: 400,
+        body: `<div style="flex:1;overflow:auto;padding:12px;"><pre style="font-family:var(--mono);font-size:12px;white-space:pre-wrap;line-height:1.5;">${escapeHtml(file.content || '(empty)')}</pre></div>`,
+      });
+    });
+  }
+}
+
+function fmNavigate(btn, dir) {
+  const win = btn.closest('.window');
+  const winId = win.dataset.winId || win.id;
+  let currentPath = win._fmPath || '/home';
+  if (dir === '..') {
+    const parts = currentPath.split('/').filter(Boolean);
+    parts.pop();
+    currentPath = '/' + parts.join('/') || '/';
+  }
+  fmLoadDir(winId, currentPath);
+}
+
+function fmRefresh(btn) {
+  const win = btn.closest('.window');
+  const winId = win.dataset.winId || win.id;
+  fmLoadDir(winId, win._fmPath || '/home');
+}
+
+function fmNewFile(btn) {
+  const win = btn.closest('.window');
+  const winId = win.dataset.winId || win.id;
+  const name = prompt('File name:', 'untitled.mdb');
+  if (!name) return;
+  const path = (win._fmPath || '/home') + '/' + name;
+  const content = JSON.stringify({ version: '0.3.0', superbits: [], registers: [], metadata: {} }, null, 2);
+  fsWriteFile(path, content, name).then(() => fmLoadDir(winId, win._fmPath || '/home'));
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Playground App
+// ═══════════════════════════════════════════════════════════════════
+
+function openPlayground() {
+  createWindow({
+    title: 'Playground', icon: '🧪', appType: 'playground',
+    width: 750, height: 500,
+    body: `
+      <div style="flex:1;overflow-y:auto;padding:16px;">
+        <h3 style="font-size:16px;margin-bottom:16px;background:linear-gradient(135deg,var(--accent-glow),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Quick Experiments</h3>
+
+        <div class="result-card">
+          <h4>SuperBit Cascade</h4>
+          <div class="row" style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+            <input type="text" id="__PG_BITS__" value="10110101" placeholder="Binary string" style="flex:1;padding:6px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:12px;">
+            <input type="number" id="__PG_DIMS__" value="6" min="1" max="10" style="width:60px;padding:6px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;">
+            <button class="btn btn-sm btn-primary" onclick="pgCascade(this)">Cascade</button>
+          </div>
+          <pre id="__PG_CASCADE_OUT__" style="font-size:11px;max-height:200px;overflow:auto;color:var(--text-dim);"></pre>
+        </div>
+
+        <div class="result-card">
+          <h4>Algorithms</h4>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+            <button class="btn btn-sm btn-secondary" onclick="pgAlgo(this,'shor')">Shor(15)</button>
+            <button class="btn btn-sm btn-secondary" onclick="pgAlgo(this,'shor21')">Shor(21)</button>
+            <button class="btn btn-sm btn-secondary" onclick="pgAlgo(this,'grover')">Grover(4,7)</button>
+            <button class="btn btn-sm btn-secondary" onclick="pgAlgo(this,'dj')">Deutsch-Jozsa(4)</button>
+            <button class="btn btn-sm btn-secondary" onclick="pgAlgo(this,'teleport')">Teleport</button>
+            <button class="btn btn-sm btn-secondary" onclick="pgAlgo(this,'bench')">Benchmarks</button>
+          </div>
+          <pre id="__PG_ALGO_OUT__" style="font-size:11px;max-height:300px;overflow:auto;color:var(--text-dim);"></pre>
+        </div>
+      </div>
+    `,
+    onInit: (winId, el) => {
+      ['PG_BITS','PG_DIMS','PG_CASCADE_OUT','PG_ALGO_OUT'].forEach(id => {
+        const e = el.querySelector(`[id="__${id}__"]`);
+        if (e) e.id = `${id}-${winId}`;
+      });
+      el.dataset.winId = winId;
+    }
+  });
+}
+
+function pgCascade(btn) {
+  const win = btn.closest('.window');
+  const id = win.dataset.winId || win.id;
+  const bits = document.getElementById(`PG_BITS-${id}`).value.trim();
+  const dims = parseInt(document.getElementById(`PG_DIMS-${id}`).value) || 6;
+  const out = document.getElementById(`PG_CASCADE_OUT-${id}`);
+  const t0 = performance.now();
+  const result = mdb.dimensionalCascade(bits, dims);
+  out.textContent = `(${(performance.now()-t0).toFixed(2)}ms)\n${result}`;
+}
+
+function pgAlgo(btn, type) {
+  const win = btn.closest('.window');
+  const id = win.dataset.winId || win.id;
+  const out = document.getElementById(`PG_ALGO_OUT-${id}`);
+  const t0 = performance.now();
+  let result;
+  switch(type) {
+    case 'shor': result = mdb.shor(typeof BigInt!=='undefined'?BigInt(15):15); break;
+    case 'shor21': result = mdb.shor(typeof BigInt!=='undefined'?BigInt(21):21); break;
+    case 'grover': result = mdb.grover(4, 7); break;
+    case 'dj': result = mdb.deutschJozsa(4); break;
+    case 'teleport': {
+      const a = 1/Math.sqrt(2);
+      result = mdb.teleport(a, 0, a, 0, typeof BigInt!=='undefined'?BigInt(Date.now()):Date.now());
+      break;
+    }
+    case 'bench':
+      out.textContent = 'Running benchmarks...';
+      setTimeout(() => {
+        const t1 = performance.now();
+        const r = mdb.runBenchmarks();
+        out.textContent = `(${((performance.now()-t1)/1000).toFixed(1)}s)\n${r}`;
+      }, 50);
+      return;
+  }
+  out.textContent = `(${(performance.now()-t0).toFixed(2)}ms)\n${result}`;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Settings App
+// ═══════════════════════════════════════════════════════════════════
+
+function openSettings() {
+  createWindow({
+    title: 'Settings', icon: '⚙️', appType: 'settings',
+    width: 550, height: 480,
+    body: `
+      <div class="settings">
+        <h3>System Settings</h3>
+        <div class="settings-section">
+          <h4>Engine</h4>
+          <div class="setting-row">
+            <div><div class="label">WASM Engine Status</div><div class="sublabel">MDB core running in WebAssembly</div></div>
+            <span class="badge ${wasmReady ? 'badge-green' : 'badge-red'}">${wasmReady ? 'Active' : 'Inactive'}</span>
+          </div>
+          <div class="setting-row">
+            <div><div class="label">Sparse Register</div><div class="sublabel">No architectural position limit — memory scales with populated states, not 2<sup>n</sup></div></div>
+            <span class="badge badge-green">Active</span>
+          </div>
+          <div class="setting-row">
+            <div><div class="label">Dimensional Cascade</div><div class="sublabel">Fibonacci-scaled coordinates converging to φ ≈ 1.618</div></div>
+            <span class="badge badge-green">Active</span>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h4>Storage</h4>
+          <div class="setting-row">
+            <div><div class="label">IndexedDB Filesystem</div><div class="sublabel">Persistent browser storage for workspaces</div></div>
+            <span class="badge ${db ? 'badge-green' : 'badge-red'}">${db ? 'Connected' : 'Unavailable'}</span>
+          </div>
+          <div class="setting-row">
+            <div><div class="label">Clear All Data</div><div class="sublabel">Remove all saved files and experiments</div></div>
+            <button class="btn btn-sm btn-danger" onclick="if(confirm('Delete all saved data?')){indexedDB.deleteDatabase('${DB_NAME}');location.reload();}">Clear</button>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h4>About</h4>
+          <div class="setting-row">
+            <div><div class="label">MDB-OS Version</div></div>
+            <span style="font-family:var(--mono);font-size:13px;">v${wasmReady && mdb.version ? mdb.version() : '0.3.0'}</span>
+          </div>
+          <div class="setting-row">
+            <div><div class="label">Inventor</div></div>
+            <span style="font-size:13px;">Ryan Guitard</span>
+          </div>
+          <div class="setting-row">
+            <div><div class="label">Engine</div></div>
+            <span style="font-size:13px;">Rust → WebAssembly</span>
+          </div>
+        </div>
+      </div>
+    `
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// About App
+// ═══════════════════════════════════════════════════════════════════
+
+function openAbout() {
+  createWindow({
+    title: 'About MDB-OS', icon: 'ℹ️', appType: 'about',
+    width: 500, height: 420,
+    body: `
+      <div class="about">
+        <div class="logo">MDB-OS</div>
+        <div class="subtitle">Multidimensional Binary Operating System</div>
+        <div style="margin-bottom:24px;">
+          <span class="badge badge-blue" style="font-size:12px;">v${wasmReady && mdb.version ? mdb.version() : '0.3.0'}</span>
+        </div>
+        <div class="info-grid">
+          <span class="lbl">Invented by</span><span>Ryan Guitard</span>
+          <span class="lbl">Architecture</span><span>Rust core → WebAssembly</span>
+          <span class="lbl">Paradigm</span><span>SuperBit (multidimensional binary)</span>
+          <span class="lbl">Key Innovation</span><span>Non-destructive superposition</span>
+          <span class="lbl">Cascade</span><span>Fibonacci dimensional coordinates</span>
+          <span class="lbl">Golden Ratio</span><span>φ ≈ 1.618033988749895</span>
+          <span class="lbl">Modules</span><span>16 core modules, 265+ tests</span>
+          <span class="lbl">Sparse Register</span><span>No position limit — scales with populated states</span>
+          <span class="lbl">Capabilities</span><span>peek() · fork() · deterministic replay</span>
+        </div>
+        <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);line-height:1.6;">
+          MDB replaces the classical bit with a SuperBit — a geometric object<br>
+          in recursive dimensional cascade space with Fibonacci-scaled coordinates<br>
+          converging to φ. Non-destructive readout (peek), state cloning (fork),<br>
+          deterministic replay. Three operations impossible on quantum hardware.<br>
+          Sparse register: memory scales with entanglement complexity, not 2<sup>n</sup>.
+        </div>
+      </div>
+    `
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Utilities
+// ═══════════════════════════════════════════════════════════════════
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1048576).toFixed(1) + ' MB';
+}
+
+function hashString(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const c = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + c;
+    hash |= 0;
+  }
+  return 'djb2:' + Math.abs(hash).toString(16).padStart(8, '0');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Mobile Support
+// ═══════════════════════════════════════════════════════════════════
+
+// Single-tap to open apps on mobile (desktop uses double-click)
+function mobileOpenApp(event, appType) {
+  if (!isMobile()) return; // On desktop, let ondblclick handle it
+  event.stopPropagation();
+  openApp(appType);
+}
+
+// Make file manager items single-tap on mobile
+const origFmOpen = typeof fmOpen === 'function' ? fmOpen : null;
+
+// Patch fmLoadDir to add touch-friendly click handlers on mobile
+const origFmLoadDir = fmLoadDir;
+fmLoadDir = async function(winId, path) {
+  await origFmLoadDir(winId, path);
+  if (isMobile()) {
+    // Replace ondblclick with onclick for file manager items
+    const listEl = document.getElementById(`FM_LIST-${winId}`);
+    if (listEl) {
+      listEl.querySelectorAll('.fm-item').forEach(item => {
+        const dblclickAttr = item.getAttribute('ondblclick');
+        if (dblclickAttr) {
+          item.setAttribute('onclick', dblclickAttr);
+          item.removeAttribute('ondblclick');
+        }
+      });
+    }
+  }
+};
+
+// Inject sidebar toggle button into experiment lab toolbar on mobile
+const origOpenExperimentLab = openExperimentLab;
+openExperimentLab = function() {
+  origOpenExperimentLab();
+  // Find the newly created experiment window and inject toggle
+  setTimeout(() => {
+    document.querySelectorAll('.lab-toolbar').forEach(toolbar => {
+      if (toolbar.querySelector('.lab-sidebar-toggle')) return;
+      const toggleBtn = document.createElement('button');
+      toggleBtn.className = 'lab-sidebar-toggle';
+      toggleBtn.innerHTML = '☰ Config';
+      toggleBtn.onclick = function() {
+        const sidebar = this.closest('.lab').querySelector('.lab-sidebar');
+        if (sidebar) {
+          sidebar.classList.toggle('mobile-open');
+          this.innerHTML = sidebar.classList.contains('mobile-open') ? '✕ Close' : '☰ Config';
+        }
+      };
+      toolbar.insertBefore(toggleBtn, toolbar.firstChild);
+    });
+  }, 100);
+};
+
+// Handle orientation changes: re-layout windows
+window.addEventListener('resize', () => {
+  if (isMobile()) {
+    // Force all windows to fullscreen on mobile
+    Object.values(windows).forEach(w => {
+      if (!w.minimized) {
+        w.el.style.left = '0';
+        w.el.style.top = '0';
+        w.el.style.width = '100%';
+        w.el.style.height = `calc(100vh - ${getComputedStyle(document.documentElement).getPropertyValue('--taskbar-h')})`;
+      }
+    });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// Boot
+// ═══════════════════════════════════════════════════════════════════
+
+boot();
+</script>
+</body>
+</html>

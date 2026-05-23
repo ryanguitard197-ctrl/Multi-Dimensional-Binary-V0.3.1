@@ -1,0 +1,19 @@
+[package]
+name = "mdb-wasm"
+version = "0.3.0"
+edition = "2021"
+description = "MDB-OS WebAssembly bindings — quantum computing in the browser"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+mdb-core = { path = "../core" }
+wasm-bindgen = "0.2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+js-sys = "0.3"
+
+[profile.release]
+opt-level = "s"
+lto = true

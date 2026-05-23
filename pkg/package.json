@@ -1,0 +1,16 @@
+{
+  "name": "mdb-wasm",
+  "type": "module",
+  "description": "MDB-OS WebAssembly bindings — quantum computing in the browser",
+  "version": "0.3.0",
+  "files": [
+    "mdb_wasm_bg.wasm",
+    "mdb_wasm.js",
+    "mdb_wasm.d.ts"
+  ],
+  "main": "mdb_wasm.js",
+  "types": "mdb_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

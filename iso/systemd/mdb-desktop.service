@@ -1,0 +1,21 @@
+[Unit]
+Description=MDB Desktop Environment
+Documentation=https://github.com/ryanguitard197-ctrl/MDB-OS
+After=mdbfs.service graphical.target
+Requires=mdbfs.service
+ConditionPathExists=/usr/local/bin/mdb-desktop
+
+[Service]
+Type=simple
+User=%u
+PAMName=login
+TTYPath=/dev/tty7
+Environment=XDG_SESSION_TYPE=wayland
+Environment=XDG_RUNTIME_DIR=/run/user/%U
+Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/%U/bus
+ExecStart=/usr/local/bin/mdb-desktop --backend udev
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=graphical.target

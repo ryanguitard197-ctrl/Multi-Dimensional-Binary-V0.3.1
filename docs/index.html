@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MDB-OS — Beyond Quantum, In Your Browser</title>
+<meta name="description" content="MDB-OS replaces exponential memory scaling with sparse state representation. 64-position GHZ state in 168 bytes. Runs in any browser.">
+<meta property="og:title" content="MDB-OS — Beyond Quantum, In Your Browser">
+<meta property="og:description" content="64 positions. 2 states. 168 bytes. What quantum computing promised but couldn't deliver — running on commodity hardware.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   MDB-OS Landing Page
+   ═══════════════════════════════════════════════════════════════ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #06060e;
+  --bg2: #0a0a16;
+  --surface: #0f0f1c;
+  --surface2: #161628;
+  --border: #1e1e38;
+  --text: #e8e8f4;
+  --text-dim: #9494b8;
+  --text-muted: #5a5a78;
+  --accent: #6366f1;
+  --accent-glow: #818cf8;
+  --green: #22c55e;
+  --cyan: #06b6d4;
+  --magenta: #d946ef;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Inter', -apple-system, sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent-glow); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Background grid ── */
+.bg-grid {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(99,102,241,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,102,241,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* ── Glow orbs ── */
+.glow-orb {
+  position: absolute; border-radius: 50%; filter: blur(120px);
+  pointer-events: none; z-index: 0;
+}
+.glow-orb-1 { width: 600px; height: 600px; top: -200px; left: -200px; background: rgba(99,102,241,0.08); }
+.glow-orb-2 { width: 500px; height: 500px; top: 200px; right: -150px; background: rgba(6,182,212,0.06); }
+.glow-orb-3 { width: 400px; height: 400px; bottom: -100px; left: 30%; background: rgba(217,70,239,0.05); }
+
+/* ── Layout ── */
+.container { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+section { padding: 100px 0; }
+
+/* ── Nav ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(6,6,14,0.85); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 0;
+}
+nav .container { display: flex; align-items: center; justify-content: space-between; }
+.nav-logo { font-family: var(--mono); font-weight: 700; font-size: 18px; color: var(--text); }
+.nav-logo span { color: var(--accent-glow); }
+.nav-links { display: flex; gap: 32px; align-items: center; }
+.nav-links a { color: var(--text-dim); font-size: 14px; font-weight: 500; transition: color 0.2s; }
+.nav-links a:hover { color: var(--text); text-decoration: none; }
+.nav-cta {
+  background: var(--accent); color: white !important; padding: 8px 20px;
+  border-radius: 8px; font-weight: 600; font-size: 14px;
+  transition: background 0.2s, transform 0.1s;
+}
+.nav-cta:hover { background: var(--accent-glow); transform: translateY(-1px); text-decoration: none !important; }
+
+/* ── Hero ── */
+.hero { padding: 180px 0 120px; text-align: center; position: relative; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 6px 16px; border-radius: 100px; font-size: 13px;
+  color: var(--text-dim); margin-bottom: 32px;
+  font-family: var(--mono);
+}
+.hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+h1 {
+  font-size: clamp(40px, 7vw, 72px);
+  font-weight: 800; line-height: 1.08;
+  letter-spacing: -0.03em; margin-bottom: 24px;
+}
+h1 .gradient {
+  background: linear-gradient(135deg, var(--accent-glow), var(--cyan), var(--magenta));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-sub {
+  font-size: clamp(16px, 2.2vw, 20px);
+  color: var(--text-dim); max-width: 640px;
+  margin: 0 auto 48px; line-height: 1.6; font-weight: 400;
+}
+.hero-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.btn-primary {
+  background: var(--accent); color: white; padding: 14px 32px;
+  border-radius: 10px; font-weight: 600; font-size: 16px;
+  border: none; cursor: pointer; transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 8px;
+  text-decoration: none;
+}
+.btn-primary:hover { background: var(--accent-glow); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(99,102,241,0.3); text-decoration: none; }
+.btn-secondary {
+  background: transparent; color: var(--text); padding: 14px 32px;
+  border-radius: 10px; font-weight: 600; font-size: 16px;
+  border: 1px solid var(--border); cursor: pointer; transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 8px;
+  text-decoration: none;
+}
+.btn-secondary:hover { border-color: var(--text-muted); transform: translateY(-2px); text-decoration: none; }
+
+/* ── The Number ── */
+.the-number {
+  padding: 80px 0;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.number-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+}
+.number-card {
+  text-align: center; padding: 48px 24px;
+  position: relative;
+}
+.number-card:not(:last-child)::after {
+  content: ''; position: absolute; right: 0; top: 20%; height: 60%;
+  width: 1px; background: var(--border);
+}
+.number-value {
+  font-family: var(--mono); font-size: clamp(36px, 5vw, 56px);
+  font-weight: 700; margin-bottom: 8px;
+  line-height: 1;
+}
+.number-value.green { color: var(--green); }
+.number-value.cyan { color: var(--cyan); }
+.number-value.magenta { color: var(--magenta); }
+.number-label {
+  font-size: 14px; color: var(--text-dim); font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+
+/* ── Comparison ── */
+.comparison { background: var(--bg); }
+.section-title {
+  font-size: clamp(28px, 4vw, 44px); font-weight: 800;
+  letter-spacing: -0.02em; margin-bottom: 16px;
+}
+.section-sub {
+  font-size: 17px; color: var(--text-dim); max-width: 600px;
+  margin-bottom: 56px; line-height: 1.6;
+}
+.comparison-table {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+}
+.comparison-row {
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  border-bottom: 1px solid var(--border);
+}
+.comparison-row:last-child { border-bottom: none; }
+.comparison-row.header {
+  background: var(--surface2); font-weight: 600; font-size: 13px;
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim);
+}
+.comparison-cell {
+  padding: 18px 24px; display: flex; align-items: center;
+  font-size: 15px; font-family: var(--mono);
+}
+.comparison-cell:not(:last-child) { border-right: 1px solid var(--border); }
+.comparison-cell.label { font-family: var(--sans); font-weight: 500; color: var(--text); }
+.comparison-cell.header { font-family: var(--sans); }
+.cell-na { color: var(--text-muted); }
+.cell-bad { color: var(--red, #ef4444); }
+.cell-good { color: var(--green); font-weight: 600; }
+
+/* ── How it works ── */
+.how-it-works { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+.step-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 36px; position: relative;
+  transition: border-color 0.3s;
+}
+.step-card:hover { border-color: var(--accent); }
+.step-number {
+  font-family: var(--mono); font-size: 48px; font-weight: 800;
+  color: var(--surface2); position: absolute; top: 16px; right: 24px;
+  line-height: 1; opacity: 0.5;
+}
+.step-title {
+  font-family: var(--mono); font-size: 18px; font-weight: 700;
+  color: var(--accent-glow); margin-bottom: 12px;
+}
+.step-desc { font-size: 15px; color: var(--text-dim); line-height: 1.65; }
+
+/* ── Code block ── */
+.code-section { background: var(--bg); }
+.code-block {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden; max-width: 720px;
+  margin: 0 auto;
+}
+.code-header {
+  background: var(--surface2); padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+}
+.code-dot { width: 10px; height: 10px; border-radius: 50%; }
+.code-dot.r { background: #ef4444; }
+.code-dot.y { background: #f59e0b; }
+.code-dot.g { background: #22c55e; }
+.code-header span { margin-left: 12px; font-size: 13px; color: var(--text-muted); font-family: var(--mono); }
+.code-body {
+  padding: 24px; font-family: var(--mono); font-size: 14px;
+  line-height: 1.8; color: var(--text-dim); overflow-x: auto;
+}
+.code-body .comment { color: var(--text-muted); }
+.code-body .fn { color: var(--accent-glow); }
+.code-body .num { color: var(--cyan); }
+.code-body .str { color: var(--green); }
+.code-body .kw { color: var(--magenta); }
+.code-body .result { color: var(--green); font-weight: 600; }
+
+/* ── Capabilities ── */
+.capabilities { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.cap-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+.cap-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 32px;
+  transition: border-color 0.3s;
+}
+.cap-card:hover { border-color: var(--accent); }
+.cap-icon { font-size: 28px; margin-bottom: 16px; }
+.cap-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.cap-desc { font-size: 15px; color: var(--text-dim); line-height: 1.6; }
+
+/* ── CTA ── */
+.final-cta {
+  text-align: center; padding: 120px 0;
+  background: var(--bg);
+}
+.final-cta h2 {
+  font-size: clamp(32px, 5vw, 52px); font-weight: 800;
+  letter-spacing: -0.02em; margin-bottom: 20px;
+}
+.final-cta p {
+  font-size: 18px; color: var(--text-dim); max-width: 520px;
+  margin: 0 auto 40px; line-height: 1.6;
+}
+
+/* ── Footer ── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 40px 0; text-align: center;
+}
+footer p { font-size: 13px; color: var(--text-muted); }
+footer a { color: var(--text-dim); }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  section { padding: 60px 0; }
+  .hero { padding: 140px 0 80px; }
+  .number-grid { grid-template-columns: 1fr; gap: 0; }
+  .number-card:not(:last-child)::after { display: none; }
+  .number-card { padding: 24px; }
+  .comparison-row { grid-template-columns: 1fr; }
+  .comparison-cell.header:first-child { display: none; }
+  .comparison-row.header { display: none; }
+  .comparison-cell { padding: 12px 20px; border-right: none !important; }
+  .comparison-cell.label { background: var(--surface2); font-weight: 600; }
+  .comparison-cell::before { content: attr(data-label); display: block; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; font-family: var(--sans); }
+  .steps-grid { grid-template-columns: 1fr; }
+  .cap-grid { grid-template-columns: 1fr; }
+  .nav-links { display: none; }
+  .hero-actions { flex-direction: column; align-items: center; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+
+<!-- ── Nav ── -->
+<nav>
+  <div class="container">
+    <div class="nav-logo"><span>MDB</span>-OS</div>
+    <div class="nav-links">
+      <a href="#how-it-works">How It Works</a>
+      <a href="#comparison">Comparison</a>
+      <a href="#capabilities">Capabilities</a>
+      <a href="https://github.com/ryanguitard197-ctrl/MDB-OS" target="_blank">GitHub</a>
+      <a href="./desktop/" class="nav-cta">Launch Desktop →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="glow-orb glow-orb-1"></div>
+  <div class="glow-orb glow-orb-2"></div>
+  <div class="container">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      v0.3.0 — Real WASM engine running in browser
+    </div>
+    <h1>
+      Beyond Quantum.<br>
+      <span class="gradient">In Your Browser.</span>
+    </h1>
+    <p class="hero-sub">
+      MDB-OS replaces exponential memory scaling with sparse state representation.
+      64 positions. 2 states. 168 bytes. No lab. No cloud. No limit.
+    </p>
+    <div class="hero-actions">
+      <a href="./desktop/" class="btn-primary">
+        Try the Live Demo →
+      </a>
+      <a href="https://github.com/ryanguitard197-ctrl/MDB-OS" target="_blank" class="btn-secondary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        View Source
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── The Numbers ── -->
+<section class="the-number">
+  <div class="container">
+    <div class="number-grid">
+      <div class="number-card">
+        <div class="number-value green">168 bytes</div>
+        <div class="number-label">64-position GHZ state</div>
+      </div>
+      <div class="number-card">
+        <div class="number-value cyan">295 EB</div>
+        <div class="number-label">Same state, dense register</div>
+      </div>
+      <div class="number-card">
+        <div class="number-value magenta">0 qubits</div>
+        <div class="number-label">No quantum hardware needed</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── How it works ── -->
+<section class="how-it-works" id="how-it-works">
+  <div class="container">
+    <div class="section-title">The core insight</div>
+    <p class="section-sub">
+      Every quantum simulator stores 2<sup>n</sup> amplitudes. MDB-OS stores only the states that actually exist.
+    </p>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-number">01</div>
+        <div class="step-title">Sparse Register</div>
+        <div class="step-desc">
+          A HashMap&lt;u64, Complex&gt; that stores only populated basis states. The register doesn't care how wide it is — only how many states are occupied. 64 positions with 2 populated states = 168 bytes. Not 295 exabytes.
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-number">02</div>
+        <div class="step-title">peek() · fork() · replay()</div>
+        <div class="step-desc">
+          Three operations that quantum hardware provably cannot have. Non-destructive state inspection. Lossless state cloning. Deterministic re-execution. These aren't debug features — they're designed capabilities.
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-number">03</div>
+        <div class="step-title">Dimensional Cascade</div>
+        <div class="step-desc">
+          Every binary pattern gets a geometric identity via Fibonacci-scaled coordinates converging to φ. The SuperBit B&nbsp;=&nbsp;(σ,&nbsp;Ψ,&nbsp;W,&nbsp;A,&nbsp;G) is embedded in ℝ<sup>∞</sup>, turning search into geometry instead of enumeration.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Code Demo ── -->
+<section class="code-section">
+  <div class="container" style="text-align:center;">
+    <div class="section-title">See it run</div>
+    <p class="section-sub" style="margin-left:auto;margin-right:auto;">
+      Open the browser desktop, launch Terminal, and type:
+    </p>
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dot r"></div>
+        <div class="code-dot y"></div>
+        <div class="code-dot g"></div>
+        <span>MDB-OS Terminal</span>
+      </div>
+      <div class="code-body" style="text-align:left;">
+<span class="comment">// Create a 64-position GHZ state</span>
+$ <span class="fn">sparse</span> <span class="num">64</span>
+
+<span class="comment">── MDB Sparse Register: 64 positions ──</span>
+<span class="str">|000...0⟩</span>  prob = <span class="num">0.5000</span>
+<span class="str">|111...1⟩</span>  prob = <span class="num">0.5000</span>
+
+Populated states: <span class="result">2</span>
+Memory used:      <span class="result">168 bytes</span>
+Dense equivalent: <span class="cell-bad">295,147,905,179,352,825,856 bytes</span>
+Sparsity:         <span class="result">1.08 × 10⁻¹⁹</span>
+
+<span class="comment">// Non-destructive readout — state unchanged after peek</span>
+$ <span class="fn">peek</span> <span class="num">64</span>
+peek() called twice — <span class="result">identical results ✓</span>
+<span class="comment">// This is impossible on quantum hardware.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Comparison ── -->
+<section class="comparison" id="comparison">
+  <div class="container">
+    <div class="section-title">How MDB-OS compares</div>
+    <p class="section-sub">
+      Not a faster quantum simulator. A different computational primitive.
+    </p>
+    <div class="comparison-table">
+      <div class="comparison-row header">
+        <div class="comparison-cell header"></div>
+        <div class="comparison-cell header">Quantum Hardware</div>
+        <div class="comparison-cell header">Classical Sim</div>
+        <div class="comparison-cell header">MDB-OS</div>
+      </div>
+      <div class="comparison-row">
+        <div class="comparison-cell label">Memory at 64 positions</div>
+        <div class="comparison-cell cell-na" data-label="Quantum Hardware">Physical qubits</div>
+        <div class="comparison-cell cell-bad" data-label="Classical Sim">295 exabytes</div>
+        <div class="comparison-cell cell-good" data-label="MDB-OS">168 bytes</div>
+      </div>
+      <div class="comparison-row">
+        <div class="comparison-cell label">Non-destructive readout</div>
+        <div class="comparison-cell cell-bad" data-label="Quantum Hardware">Impossible</div>
+        <div class="comparison-cell cell-good" data-label="Classical Sim">Possible</div>
+        <div class="comparison-cell cell-good" data-label="MDB-OS">peek() — native</div>
+      </div>
+      <div class="comparison-row">
+        <div class="comparison-cell label">State cloning</div>
+        <div class="comparison-cell cell-bad" data-label="Quantum Hardware">No-cloning theorem</div>
+        <div class="comparison-cell cell-na" data-label="Classical Sim">Full copy (expensive)</div>
+        <div class="comparison-cell cell-good" data-label="MDB-OS">fork() — O(k) sparse</div>
+      </div>
+      <div class="comparison-row">
+        <div class="comparison-cell label">Deterministic replay</div>
+        <div class="comparison-cell cell-bad" data-label="Quantum Hardware">Non-deterministic</div>
+        <div class="comparison-cell cell-good" data-label="Classical Sim">Possible</div>
+        <div class="comparison-cell cell-good" data-label="MDB-OS">Seeded PRNG — native</div>
+      </div>
+      <div class="comparison-row">
+        <div class="comparison-cell label">Runs on</div>
+        <div class="comparison-cell cell-na" data-label="Quantum Hardware">$10M+ lab</div>
+        <div class="comparison-cell cell-na" data-label="Classical Sim">Supercomputer</div>
+        <div class="comparison-cell cell-good" data-label="MDB-OS">Any browser</div>
+      </div>
+      <div class="comparison-row">
+        <div class="comparison-cell label">Position limit</div>
+        <div class="comparison-cell cell-na" data-label="Quantum Hardware">~1,000 noisy</div>
+        <div class="comparison-cell cell-bad" data-label="Classical Sim">~40 (memory wall)</div>
+        <div class="comparison-cell cell-good" data-label="MDB-OS">None (sparse)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Capabilities ── -->
+<section class="capabilities" id="capabilities">
+  <div class="container">
+    <div class="section-title">What's inside</div>
+    <p class="section-sub">Written in Rust. Compiled to WebAssembly. Running in your browser right now.</p>
+    <div class="cap-grid">
+      <div class="cap-card">
+        <div class="cap-icon">⚡</div>
+        <div class="cap-title">Sparse Quantum Register</div>
+        <div class="cap-desc">HashMap&lt;u64, Complex&gt; with full gate set — H, X, Y, Z, S, T, CNOT, CZ, SWAP, Toffoli, Fredkin, QFT. Auto-pruning keeps memory tight. No position limit.</div>
+      </div>
+      <div class="cap-card">
+        <div class="cap-icon">🔬</div>
+        <div class="cap-title">Algorithms</div>
+        <div class="cap-desc">Grover's search, Deutsch-Jozsa, Bernstein-Vazirani, quantum phase estimation, variational optimization. All running on the sparse register.</div>
+      </div>
+      <div class="cap-card">
+        <div class="cap-icon">🌀</div>
+        <div class="cap-title">SuperBit Geometry</div>
+        <div class="cap-desc">B = (σ, Ψ, W, A, G) — the multidimensional binary primitive. Dimensional cascade coordinates via Fibonacci scaling. Geometric search instead of blind enumeration.</div>
+      </div>
+      <div class="cap-card">
+        <div class="cap-icon">🖥️</div>
+        <div class="cap-title">Browser Desktop</div>
+        <div class="cap-desc">Full desktop environment with Terminal, Experiment Lab, Circuit Designer, and Settings. 322 KB WASM binary. No install. No server. No API key.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Final CTA ── -->
+<section class="final-cta">
+  <div class="glow-orb glow-orb-3"></div>
+  <div class="container">
+    <h2>The foundation is built.<br>The numbers are verified.</h2>
+    <p>Open the desktop. Run <code style="background:var(--surface);padding:2px 8px;border-radius:4px;font-family:var(--mono);">sparse 64</code> yourself. See what 168 bytes can do.</p>
+    <div class="hero-actions">
+      <a href="./desktop/" class="btn-primary">
+        Launch MDB-OS Desktop →
+      </a>
+      <a href="https://github.com/ryanguitard197-ctrl/MDB-OS" target="_blank" class="btn-secondary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        Star on GitHub
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer>
+  <div class="container">
+    <p>MDB-OS is open source. Built by <a href="https://github.com/ryanguitard197-ctrl" target="_blank">Ryan Guitard</a>.</p>
+  </div>
+</footer>
+
+</body>
+</html>

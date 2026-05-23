@@ -1,0 +1,14 @@
+[package]
+name = "mdb-cli"
+version = "0.3.0"
+edition = "2021"
+authors = ["Ryan Guitard <ryan@mdb-os.dev>"]
+description = "MDB-OS interactive CLI and REPL"
+license = "MIT"
+
+[[bin]]
+name = "mdb"
+path = "src/main.rs"
+
+[dependencies]
+mdb-core = { path = "../core" }

@@ -1,0 +1,17 @@
+[Unit]
+Description=MDBFS — MDB Dimensional Filesystem
+Documentation=https://github.com/ryanguitard197-ctrl/MDB-OS
+After=local-fs.target
+Before=display-manager.service
+
+[Service]
+Type=simple
+ExecStartPre=/usr/bin/mkdir -p /home/%u/mdb
+ExecStartPre=/usr/bin/mkdir -p /var/lib/mdbfs
+ExecStart=/usr/local/bin/mdbfs mount /home/%u/mdb --store /var/lib/mdbfs --foreground
+ExecStop=/usr/bin/fusermount -u /home/%u/mdb
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

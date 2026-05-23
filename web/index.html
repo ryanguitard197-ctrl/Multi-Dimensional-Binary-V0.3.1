@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MDB-OS Playground — Quantum Computing in Your Browser</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --surface2: #1a1a28;
+            --border: #2a2a3a;
+            --text: #e0e0f0;
+            --text-dim: #8888aa;
+            --accent: #6366f1;
+            --accent-glow: #818cf8;
+            --green: #22c55e;
+            --amber: #f59e0b;
+            --red: #ef4444;
+            --cyan: #06b6d4;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            padding: 24px 32px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(180deg, #0f0f18 0%, var(--bg) 100%);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-glow), var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header .version {
+            color: var(--text-dim);
+            font-size: 13px;
+        }
+
+        .header .subtitle {
+            color: var(--text-dim);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--green);
+        }
+
+        .status-badge .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Layout */
+        .main {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            height: calc(100vh - 77px);
+        }
+
+        /* Panels */
+        .panel {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-left { border-right: 1px solid var(--border); }
+
+        .panel-header {
+            padding: 12px 20px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .panel-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab {
+            padding: 10px 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-dim);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tab:hover { color: var(--text); background: var(--surface2); }
+        .tab.active { color: var(--accent-glow); border-bottom-color: var(--accent); }
+
+        .tab-content { display: none; height: 100%; }
+        .tab-content.active { display: flex; flex-direction: column; }
+
+        /* Input areas */
+        .input-group {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        input[type="text"], input[type="number"] {
+            flex: 1;
+            padding: 8px 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus { border-color: var(--accent); }
+
+        .btn {
+            padding: 8px 16px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn:hover { background: var(--accent-glow); transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+        .btn.secondary { background: var(--surface2); border: 1px solid var(--border); }
+        .btn.secondary:hover { background: var(--border); }
+        .btn.green { background: var(--green); }
+        .btn.amber { background: var(--amber); color: #000; }
+
+        /* Quick actions */
+        .quick-actions {
+            padding: 12px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .quick-btn {
+            padding: 4px 10px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-dim);
+            font-family: inherit;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .quick-btn:hover { border-color: var(--accent); color: var(--accent-glow); }
+
+        /* Output */
+        .output {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 20px;
+            background: var(--bg);
+        }
+
+        .output-entry {
+            margin-bottom: 16px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .output-label {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .output-pre {
+            padding: 12px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-all;
+            overflow-x: auto;
+        }
+
+        .output-pre.success { border-left: 3px solid var(--green); }
+        .output-pre.info { border-left: 3px solid var(--cyan); }
+        .output-pre.error { border-left: 3px solid var(--red); }
+
+        /* Register/Circuit visualizations */
+        .state-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 0;
+            font-size: 13px;
+        }
+
+        .state-bar .ket {
+            min-width: 80px;
+            color: var(--cyan);
+        }
+
+        .state-bar .bar-track {
+            flex: 1;
+            height: 16px;
+            background: var(--surface2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .state-bar .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--cyan));
+            border-radius: 4px;
+            transition: width 0.4s ease;
+        }
+
+        .state-bar .prob {
+            min-width: 60px;
+            text-align: right;
+            color: var(--text-dim);
+            font-size: 12px;
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            padding: 20px;
+            text-align: center;
+            color: var(--text-dim);
+        }
+
+        .loading.active { display: block; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+        /* Mobile */
+        @media (max-width: 900px) {
+            .main { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+            .panel-left { border-right: none; border-bottom: 1px solid var(--border); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div>
+        <h1>MDB-OS</h1>
+        <div class="subtitle">Multidimensional Binary — Quantum Computing in Your Browser</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;">
+        <span class="version" id="versionLabel">loading...</span>
+        <div class="status-badge" id="statusBadge" style="display:none;">
+            <div class="dot"></div>
+            <span>WASM Ready</span>
+        </div>
+    </div>
+</div>
+
+<div class="main">
+    <!-- Left panel: Controls -->
+    <div class="panel panel-left">
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('superbit')">SuperBit</div>
+            <div class="tab" onclick="switchTab('register')">Register</div>
+            <div class="tab" onclick="switchTab('circuit')">Circuit</div>
+            <div class="tab" onclick="switchTab('algorithms')">Algorithms</div>
+        </div>
+
+        <!-- SuperBit Tab -->
+        <div class="tab-content active" id="tab-superbit">
+            <div class="input-group">
+                <label>Binary String</label>
+                <div class="input-row">
+                    <input type="text" id="sbBits" value="10110" placeholder="e.g. 10110">
+                    <button class="btn" onclick="runSuperBit()">Create</button>
+                </div>
+            </div>
+            <div class="quick-actions">
+                <button class="quick-btn" onclick="document.getElementById('sbBits').value='10110';runSuperBit()">10110</button>
+                <button class="quick-btn" onclick="document.getElementById('sbBits').value='11111111';runSuperBit()">11111111</button>
+                <button class="quick-btn" onclick="document.getElementById('sbBits').value='10101010';runSuperBit()">10101010</button>
+                <button class="quick-btn" onclick="document.getElementById('sbBits').value='1100110011';runSuperBit()">1100110011</button>
+                <button class="quick-btn" onclick="document.getElementById('sbBits').value='101010101010101010101010';runSuperBit()">24-bit</button>
+            </div>
+            <div class="input-group">
+                <label>Max Dimensions</label>
+                <div class="input-row">
+                    <input type="number" id="sbMaxDim" value="7" min="3" max="20">
+                    <button class="btn secondary" onclick="runCascade()">Cascade</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Register Tab -->
+        <div class="tab-content" id="tab-register">
+            <div class="input-group">
+                <label>Qubits</label>
+                <div class="input-row">
+                    <input type="number" id="regN" value="3" min="1" max="20">
+                    <button class="btn" onclick="createRegister()">Create</button>
+                </div>
+            </div>
+            <div class="quick-actions">
+                <button class="quick-btn" onclick="regGateOp('h', 0)">H(0)</button>
+                <button class="quick-btn" onclick="regGateOp('h', 1)">H(1)</button>
+                <button class="quick-btn" onclick="regGateOp('h', 2)">H(2)</button>
+                <button class="quick-btn" onclick="regGateOp('x', 0)">X(0)</button>
+                <button class="quick-btn" onclick="regGateOp('x', 1)">X(1)</button>
+                <button class="quick-btn" onclick="regCnot(0, 1)">CNOT(0→1)</button>
+                <button class="quick-btn" onclick="regCnot(0, 2)">CNOT(0→2)</button>
+                <button class="quick-btn" onclick="regCnot(1, 2)">CNOT(1→2)</button>
+            </div>
+            <div class="input-group">
+                <div class="input-row">
+                    <button class="btn secondary" onclick="regPeek()">Peek (non-destructive)</button>
+                    <button class="btn amber" onclick="regMeasure()">Measure (collapse)</button>
+                    <button class="btn secondary" onclick="regReset()">Reset</button>
+                </div>
+            </div>
+            <div class="quick-actions">
+                <span style="font-size:11px;color:var(--text-dim);margin-right:8px;">Presets:</span>
+                <button class="quick-btn" onclick="presetBell()">Bell State</button>
+                <button class="quick-btn" onclick="presetGHZ()">GHZ(3)</button>
+                <button class="quick-btn" onclick="presetUniform()">Uniform</button>
+            </div>
+        </div>
+
+        <!-- Circuit Tab -->
+        <div class="tab-content" id="tab-circuit">
+            <div class="input-group">
+                <label>Preset Circuit</label>
+                <div class="input-row">
+                    <button class="btn" onclick="runCircuit('bell')">Bell Pair</button>
+                    <button class="btn" onclick="runCircuit('ghz')">GHZ State</button>
+                    <button class="btn" onclick="runCircuit('qft')">QFT</button>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Qubits for Preset</label>
+                <div class="input-row">
+                    <input type="number" id="circN" value="3" min="2" max="12">
+                </div>
+            </div>
+        </div>
+
+        <!-- Algorithms Tab -->
+        <div class="tab-content" id="tab-algorithms">
+            <div class="input-group">
+                <label>Shor's Factoring</label>
+                <div class="input-row">
+                    <input type="number" id="shorN" value="15" min="4" max="100">
+                    <button class="btn" onclick="runShor()">Factor</button>
+                </div>
+            </div>
+            <div class="quick-actions">
+                <button class="quick-btn" onclick="document.getElementById('shorN').value='15';runShor()">15</button>
+                <button class="quick-btn" onclick="document.getElementById('shorN').value='21';runShor()">21</button>
+                <button class="quick-btn" onclick="document.getElementById('shorN').value='35';runShor()">35</button>
+            </div>
+            <div class="input-group">
+                <label>Grover's Search</label>
+                <div class="input-row">
+                    <input type="number" id="groverN" value="4" min="2" max="12" placeholder="qubits">
+                    <input type="number" id="groverTarget" value="7" min="0" placeholder="target">
+                    <button class="btn" onclick="runGrover()">Search</button>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Deutsch-Jozsa</label>
+                <div class="input-row">
+                    <input type="number" id="djN" value="4" min="1" max="12">
+                    <button class="btn" onclick="runDJ()">Run</button>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Quantum Teleportation</label>
+                <div class="input-row">
+                    <button class="btn" onclick="runTeleport()">Teleport |ψ⟩</button>
+                    <button class="btn secondary" onclick="runBenchmarks()">Full Benchmark Suite</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right panel: Output -->
+    <div class="panel">
+        <div class="panel-header">
+            <span>Output</span>
+            <button class="quick-btn" onclick="clearOutput()">Clear</button>
+        </div>
+        <div class="panel-body">
+            <div class="output" id="output">
+                <div class="loading active" id="loading">
+                    Initializing WASM module...
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    // ═══════════════════════════════════════════════════════════════
+    // Initialize WASM
+    // ═══════════════════════════════════════════════════════════════
+    import init, * as mdb from '../pkg/mdb_wasm.js';
+
+    let wasm_ready = false;
+    let currentRegister = null;
+
+    async function boot() {
+        try {
+            await init();
+            wasm_ready = true;
+            document.getElementById('versionLabel').textContent = mdb.version();
+            document.getElementById('statusBadge').style.display = 'flex';
+            document.getElementById('loading').style.display = 'none';
+            addOutput('system', `${mdb.version()} loaded — 239KB WASM, zero dependencies, zero servers.`, 'info');
+            addOutput('system', 'Quantum computing is now running in your browser tab.', 'info');
+        } catch (e) {
+            document.getElementById('loading').textContent = 'Failed to load WASM: ' + e;
+            addOutput('error', 'Failed to initialize: ' + e, 'error');
+        }
+    }
+
+    boot();
+
+    // ═══════════════════════════════════════════════════════════════
+    // Tab switching
+    // ═══════════════════════════════════════════════════════════════
+    window.switchTab = function(name) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        document.getElementById('tab-' + name).classList.add('active');
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // Output helpers
+    // ═══════════════════════════════════════════════════════════════
+    function addOutput(label, content, type = 'success') {
+        const out = document.getElementById('output');
+        const entry = document.createElement('div');
+        entry.className = 'output-entry';
+        entry.innerHTML = `
+            <div class="output-label">${label}</div>
+            <div class="output-pre ${type}">${escapeHtml(content)}</div>
+        `;
+        out.appendChild(entry);
+        out.scrollTop = out.scrollHeight;
+    }
+
+    function addStateVisualization(label, statesJson) {
+        const out = document.getElementById('output');
+        const entry = document.createElement('div');
+        entry.className = 'output-entry';
+
+        let html = `<div class="output-label">${label}</div>`;
+        const data = JSON.parse(statesJson);
+        const states = data.states || [];
+
+        for (const s of states) {
+            const prob = s.probability || 0;
+            const pct = (prob * 100).toFixed(1);
+            const barWidth = Math.max(1, prob * 100);
+            html += `
+                <div class="state-bar">
+                    <span class="ket">|${s.bits}⟩</span>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:${barWidth}%"></div>
+                    </div>
+                    <span class="prob">${pct}%</span>
+                </div>
+            `;
+        }
+
+        entry.innerHTML = html;
+        out.appendChild(entry);
+        out.scrollTop = out.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    window.clearOutput = function() {
+        document.getElementById('output').innerHTML = '';
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // SuperBit
+    // ═══════════════════════════════════════════════════════════════
+    window.runSuperBit = function() {
+        if (!wasm_ready) return;
+        const bits = document.getElementById('sbBits').value.trim();
+        const t0 = performance.now();
+        const sb = mdb.WasmSuperBit.fromString(bits);
+        const peek = sb.peek();
+        const addr = sb.address();
+        const dt = (performance.now() - t0).toFixed(2);
+
+        addOutput(`SuperBit "${bits}" (${dt}ms)`, peek, 'success');
+        addOutput('Address', addr, 'info');
+        sb.free();
+    };
+
+    window.runCascade = function() {
+        if (!wasm_ready) return;
+        const bits = document.getElementById('sbBits').value.trim();
+        const maxDim = parseInt(document.getElementById('sbMaxDim').value);
+        const t0 = performance.now();
+        const result = mdb.dimensionalCascade(bits, maxDim);
+        const dt = (performance.now() - t0).toFixed(2);
+        addOutput(`Dimensional Cascade "${bits}" → ${maxDim}D (${dt}ms)`, result, 'info');
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // Register
+    // ═══════════════════════════════════════════════════════════════
+    window.createRegister = function() {
+        if (!wasm_ready) return;
+        const n = parseInt(document.getElementById('regN').value);
+        if (currentRegister) currentRegister.free();
+        currentRegister = new mdb.WasmRegister(n, "playground");
+        addOutput(`Register Created`, `${n}-qubit register initialized to |${'0'.repeat(n)}⟩\nDimension: ${currentRegister.dim()} amplitudes`, 'success');
+        regPeek();
+    };
+
+    window.regGateOp = function(gate, pos) {
+        if (!currentRegister) { addOutput('Error', 'Create a register first', 'error'); return; }
+        if (gate === 'h') currentRegister.hadamard(pos);
+        else if (gate === 'x') currentRegister.pauliX(pos);
+        else if (gate === 'y') currentRegister.pauliY(pos);
+        else if (gate === 'z') currentRegister.pauliZ(pos);
+        addOutput(`Gate ${gate.toUpperCase()}(${pos})`, `Applied to position ${pos}`, 'success');
+        regPeek();
+    };
+
+    window.regCnot = function(c, t) {
+        if (!currentRegister) { addOutput('Error', 'Create a register first', 'error'); return; }
+        currentRegister.cnot(c, t);
+        addOutput(`CNOT(${c} → ${t})`, `Control: ${c}, Target: ${t}`, 'success');
+        regPeek();
+    };
+
+    window.regPeek = function() {
+        if (!currentRegister) { addOutput('Error', 'Create a register first', 'error'); return; }
+        const peek = currentRegister.peek();
+        addStateVisualization('Quantum State (non-destructive peek — MDB advantage)', peek);
+    };
+
+    window.regMeasure = function() {
+        if (!currentRegister) { addOutput('Error', 'Create a register first', 'error'); return; }
+        const seed = Math.floor(Math.random() * 1e15);
+        const result = currentRegister.measureAll(BigInt(seed));
+        addOutput('⚡ Measurement (state collapsed!)', result, 'info');
+    };
+
+    window.regReset = function() {
+        if (!currentRegister) return;
+        currentRegister.reset();
+        addOutput('Reset', 'Register reset to |0...0⟩', 'info');
+        regPeek();
+    };
+
+    window.presetBell = function() {
+        if (currentRegister) currentRegister.free();
+        currentRegister = new mdb.WasmRegister(2, "bell");
+        currentRegister.hadamard(0);
+        currentRegister.cnot(0, 1);
+        addOutput('Bell State |Φ+⟩', 'H(0) → CNOT(0,1)\nMaximally entangled pair: (|00⟩ + |11⟩)/√2', 'success');
+        regPeek();
+    };
+
+    window.presetGHZ = function() {
+        if (currentRegister) currentRegister.free();
+        currentRegister = new mdb.WasmRegister(3, "ghz");
+        currentRegister.hadamard(0);
+        currentRegister.cnot(0, 1);
+        currentRegister.cnot(1, 2);
+        addOutput('GHZ State', 'H(0) → CNOT(0,1) → CNOT(1,2)\n3-qubit entangled state: (|000⟩ + |111⟩)/√2', 'success');
+        regPeek();
+    };
+
+    window.presetUniform = function() {
+        if (currentRegister) currentRegister.free();
+        const n = parseInt(document.getElementById('regN').value);
+        currentRegister = new mdb.WasmRegister(n, "uniform");
+        for (let i = 0; i < n; i++) currentRegister.hadamard(i);
+        addOutput(`Uniform Superposition`, `H on all ${n} qubits → ${1 << n} equally likely states`, 'success');
+        regPeek();
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // Circuits
+    // ═══════════════════════════════════════════════════════════════
+    window.runCircuit = function(name) {
+        if (!wasm_ready) return;
+        const n = parseInt(document.getElementById('circN').value);
+        let circ;
+        if (name === 'bell') circ = mdb.WasmCircuit.bell(n);
+        else if (name === 'ghz') circ = mdb.WasmCircuit.ghz(n);
+        else if (name === 'qft') circ = mdb.WasmCircuit.qft(n);
+
+        const ascii = circ.ascii();
+        addOutput(`Circuit: ${name.toUpperCase()}(${n})`, ascii, 'info');
+
+        const t0 = performance.now();
+        const result = circ.run();
+        const dt = (performance.now() - t0).toFixed(2);
+        addOutput(`Result (${dt}ms)`, result, 'success');
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // Algorithms
+    // ═══════════════════════════════════════════════════════════════
+    window.runShor = function() {
+        if (!wasm_ready) return;
+        const n = parseInt(document.getElementById('shorN').value);
+        const t0 = performance.now();
+        const result = mdb.shor(BigInt(n));
+        const dt = (performance.now() - t0).toFixed(2);
+        addOutput(`Shor's Algorithm: Factor ${n} (${dt}ms)`, result, 'success');
+    };
+
+    window.runGrover = function() {
+        if (!wasm_ready) return;
+        const n = parseInt(document.getElementById('groverN').value);
+        const target = parseInt(document.getElementById('groverTarget').value);
+        const t0 = performance.now();
+        const result = mdb.grover(n, target);
+        const dt = (performance.now() - t0).toFixed(2);
+        addOutput(`Grover's Search: ${n} qubits, target ${target} (${dt}ms)`, result, 'success');
+    };
+
+    window.runDJ = function() {
+        if (!wasm_ready) return;
+        const n = parseInt(document.getElementById('djN').value);
+        const t0 = performance.now();
+        const result = mdb.deutschJozsa(n);
+        const dt = (performance.now() - t0).toFixed(2);
+        addOutput(`Deutsch-Jozsa: ${n} qubits (${dt}ms)`, result, 'success');
+    };
+
+    window.runTeleport = function() {
+        if (!wasm_ready) return;
+        const a = 1 / Math.sqrt(2);
+        const t0 = performance.now();
+        const result = mdb.teleport(a, 0, a, 0, BigInt(Date.now()));
+        const dt = (performance.now() - t0).toFixed(2);
+        addOutput(`Quantum Teleportation (${dt}ms)`, `Input: (${a.toFixed(4)})|0⟩ + (${a.toFixed(4)})|1⟩\n\n` + result, 'success');
+    };
+
+    window.runBenchmarks = function() {
+        if (!wasm_ready) return;
+        addOutput('Running benchmarks...', 'This may take a few seconds...', 'info');
+        setTimeout(() => {
+            const t0 = performance.now();
+            const result = mdb.runBenchmarks();
+            const dt = ((performance.now() - t0) / 1000).toFixed(1);
+            addOutput(`Benchmark Suite (${dt}s total)`, result, 'success');
+        }, 50);
+    };
+</script>
+
+</body>
+</html>
