@@ -26,7 +26,7 @@
   --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 13px; -webkit-font-smoothing: antialiased; user-select: none; }
+html, body { width: 100%; height: 100%; height: 100dvh; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 13px; -webkit-font-smoothing: antialiased; user-select: none; }
 
 /* ── Desktop ─────────────────────────────────────────────────────── */
 #desktop {
@@ -295,18 +295,23 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg);
 @media (max-width: 768px) {
   :root { --taskbar-h: 52px; --titlebar-h: 38px; }
 
+  /* Taskbar: fixed to bottom on mobile so browser chrome can't hide it */
+  #taskbar { position: fixed; bottom: 0; left: 0; right: 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  #desktop { bottom: var(--taskbar-h); }
+
   /* Windows: fill the screen on mobile */
   .window {
     min-width: 100% !important; min-height: 200px !important;
     left: 0 !important; top: 0 !important;
-    width: 100% !important; height: calc(100vh - var(--taskbar-h)) !important;
+    width: 100% !important; height: calc(100dvh - var(--taskbar-h)) !important;
     border-radius: 0 !important;
   }
   .window .resize-handle { display: none; }
   .window-titlebar { height: var(--titlebar-h); min-height: var(--titlebar-h); padding: 0 6px; cursor: default !important; }
   .window-titlebar .title { font-size: 13px; }
   .window-btn { width: 32px; height: 32px; font-size: 16px; }
-  .window-btn.minimize, .window-btn.maximize { display: none; }
+  .window-btn.maximize { display: none; }
+  .window-btn.minimize { display: flex; }
 
   /* Desktop icons: grid layout, single-tap */
   #desktop-icons {
@@ -392,6 +397,61 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg);
 @media (max-width: 768px) {
   .lab-sidebar-toggle { display: inline-flex; align-items: center; gap: 4px; }
 }
+
+/* ── Experiment Lab (AI-powered) ─────────────────────────────────── */
+.explab { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.explab-toolbar { padding:8px 12px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.explab-body { flex:1; display:flex; overflow:hidden; }
+.explab-design { flex:1; display:flex; flex-direction:column; border-right:1px solid var(--border); min-width:0; }
+.explab-design-head { padding:10px 14px; border-bottom:1px solid var(--border); font-size:12px; font-weight:600; color:var(--accent-glow); }
+.explab-prompt { padding:12px; flex-shrink:0; }
+.explab-prompt textarea { width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text); font-family:var(--sans); font-size:13px; padding:10px; border-radius:var(--radius); resize:vertical; min-height:80px; outline:none; box-sizing:border-box; }
+.explab-prompt textarea:focus { border-color:var(--accent); }
+.explab-data { padding:0 12px 12px; flex-shrink:0; }
+.explab-data textarea { width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text); font-family:var(--mono); font-size:11px; padding:8px; border-radius:var(--radius); resize:vertical; min-height:50px; outline:none; box-sizing:border-box; }
+.explab-template-area { flex:1; overflow-y:auto; padding:12px; }
+.explab-runner { width:420px; display:flex; flex-direction:column; overflow:hidden; flex-shrink:0; }
+.explab-runner-head { padding:10px 14px; border-bottom:1px solid var(--border); font-size:12px; font-weight:600; color:var(--green); display:flex; justify-content:space-between; align-items:center; }
+.explab-runner-body { flex:1; overflow-y:auto; padding:12px; }
+.explab-step { padding:8px 10px; margin-bottom:6px; background:var(--surface); border-radius:6px; border-left:3px solid var(--accent); }
+.explab-step .step-lbl { font-size:10px; text-transform:uppercase; letter-spacing:.5px; color:var(--text-dim); margin-bottom:4px; }
+.explab-step pre { font-size:10px; max-height:120px; overflow:auto; margin:0; white-space:pre-wrap; }
+.explab-lib { padding:12px; border-top:1px solid var(--border); flex-shrink:0; }
+.explab-lib select { width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text); padding:6px 8px; border-radius:4px; font-size:11px; }
+
+@media (max-width: 768px) {
+  .explab-body { flex-direction:column; }
+  .explab-design { border-right:none; border-bottom:1px solid var(--border); }
+  .explab-runner { width:100%; }
+}
+
+/* ── Research Notepad ────────────────────────────────────────────── */
+.notepad { flex:1; display:flex; flex-direction:column; }
+.notepad-toolbar { padding:8px 12px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.notepad-body { flex:1; display:flex; overflow:hidden; }
+.notepad-list { width:200px; background:var(--surface2); border-right:1px solid var(--border); overflow-y:auto; flex-shrink:0; }
+.notepad-list-item { padding:10px 12px; cursor:pointer; border-bottom:1px solid rgba(255,255,255,.04); transition:.15s; }
+.notepad-list-item:hover { background:rgba(255,255,255,.04); }
+.notepad-list-item.active { background:rgba(99,102,241,.12); border-left:2px solid var(--accent); }
+.notepad-list-item .title { font-size:12px; font-weight:600; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.notepad-list-item .date { font-size:10px; color:var(--text-dim); }
+.notepad-editor { flex:1; display:flex; flex-direction:column; }
+.notepad-editor textarea { flex:1; background:var(--surface); border:none; color:var(--text); font-family:var(--mono); font-size:13px; padding:16px; resize:none; outline:none; line-height:1.6; }
+.notepad-status { padding:4px 12px; border-top:1px solid var(--border); font-size:10px; color:var(--text-dim); display:flex; justify-content:space-between; }
+
+/* ── System Monitor ──────────────────────────────────────────────── */
+.sysmon { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.sysmon-toolbar { padding:8px 12px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+.sysmon-grid { flex:1; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:1px; background:var(--border); overflow:auto; }
+.sysmon-panel { background:var(--surface); padding:14px; display:flex; flex-direction:column; overflow:hidden; }
+.sysmon-panel h4 { font-size:11px; text-transform:uppercase; letter-spacing:.8px; color:var(--text-dim); margin-bottom:10px; flex-shrink:0; }
+.sysmon-panel canvas { flex:1; width:100%; min-height:80px; }
+.sysmon-stat { display:flex; justify-content:space-between; padding:4px 0; font-size:12px; border-bottom:1px solid rgba(255,255,255,.04); }
+.sysmon-stat .val { font-weight:700; font-family:var(--mono); }
+.sysmon-stat .val.green { color:var(--green); }
+.sysmon-stat .val.amber { color:var(--amber); }
+.sysmon-stat .val.red { color:var(--red); }
+
 </style>
 </head>
 <body>
@@ -428,6 +488,12 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg);
     <div class="desktop-icon" ondblclick="openApp('about')" onclick="mobileOpenApp(event,'about')">
       <div class="icon">ℹ️</div><div class="label">About MDB</div>
     </div>
+    <div class="desktop-icon" ondblclick="openApp('notepad')" onclick="mobileOpenApp(event,'notepad')">
+      <div class="icon">📝</div><div class="label">Notepad</div>
+    </div>
+    <div class="desktop-icon" ondblclick="openApp('sysmon')" onclick="mobileOpenApp(event,'sysmon')">
+      <div class="icon">📊</div><div class="label">System Monitor</div>
+    </div>
   </div>
   <div id="windows-container"></div>
 </div>
@@ -460,7 +526,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg);
     </div>
     <div class="start-app" onclick="openApp('experiment'); toggleStartMenu();">
       <div class="icon">🔬</div>
-      <div class="info"><div class="name">Experiment Lab</div><div class="desc">Discovery engine for real-world problems</div></div>
+      <div class="info"><div class="name">Experiment Lab</div><div class="desc">AI designs experiments, MDB runs them</div></div>
     </div>
     <div class="start-app" onclick="openApp('circuit'); toggleStartMenu();">
       <div class="icon">⚡</div>
@@ -481,6 +547,14 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg);
     <div class="start-app" onclick="openApp('about'); toggleStartMenu();">
       <div class="icon">ℹ️</div>
       <div class="info"><div class="name">About MDB-OS</div><div class="desc">Version info & credits</div></div>
+    </div>
+    <div class="start-app" onclick="openApp('notepad'); toggleStartMenu();">
+      <div class="icon">📝</div>
+      <div class="info"><div class="name">Research Notepad</div><div class="desc">Take notes, auto-save locally</div></div>
+    </div>
+    <div class="start-app" onclick="openApp('sysmon'); toggleStartMenu();">
+      <div class="icon">📊</div>
+      <div class="info"><div class="name">System Monitor</div><div class="desc">Live MDB resource & complexity tracking</div></div>
     </div>
   </div>
   <div class="footer">
@@ -1113,6 +1187,8 @@ function openApp(type) {
     case 'settings': openSettings(); break;
     case 'about': openAbout(); break;
     case 'playground': openPlayground(); break;
+    case 'notepad': openResearchNotepad(); break;
+    case 'sysmon': openSystemMonitor(); break;
   }
 }
 
@@ -1455,828 +1531,670 @@ function processTerminalCommand(cmd, outId) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// Experiment Lab App
 // ═══════════════════════════════════════════════════════════════════
+// Experiment Lab — AI-designed experiments, MDB-executed
+// ═══════════════════════════════════════════════════════════════════
+
+const EXPLAB_PRESETS = {
+  otoc: {
+    name: 'OTOC / Quantum Echoes',
+    desc: 'Google Willow breakthrough — forward evolve, perturb, reverse, measure echo.',
+    prompt: 'Run an OTOC (Out-of-Time-Order Correlator) experiment: forward Hamiltonian evolution on a spin chain, perturb qubit 0, reverse evolution, measure the echo signal. Show how the perturbation spreads.',
+    template: {
+      name: 'OTOC Echo Experiment',
+      description: 'Implements the Quantum Echoes protocol (Willow/Nature 2025). Forward evolution → single-qubit perturbation → time-reversal → echo measurement.',
+      qubits: 6, register_type: 'sparse',
+      steps: [
+        { type:'init', desc:'Initialize |0⟩⊗6' },
+        { type:'gate_sequence', desc:'Forward Hamiltonian evolution (nearest-neighbor Ising)', gates:'FORWARD_EVOLVE', params:{ layers:4, coupling:0.5 } },
+        { type:'peek', desc:'Snapshot before perturbation' },
+        { type:'fork', desc:'Fork state (MDB advantage — compare perturbed vs unperturbed)' },
+        { type:'gate', desc:'Perturb qubit 0', gate:'X', target:0 },
+        { type:'gate_sequence', desc:'Reverse Hamiltonian evolution', gates:'REVERSE_EVOLVE', params:{ layers:4, coupling:-0.5 } },
+        { type:'peek', desc:'Final state — echo measurement' },
+        { type:'fidelity', desc:'Compare with unperturbed fork — echo strength = fidelity' },
+        { type:'measure', desc:'Destructive measurement for statistics' }
+      ],
+      observables: ['echo_fidelity','state_overlap','perturbation_spread'],
+      export_format: 'json'
+    }
+  },
+  nmr_ruler: {
+    name: 'NMR Molecular Ruler',
+    desc: 'Measure inter-spin distances from NMR coupling data using quantum echo.',
+    prompt: 'Simulate an NMR molecular ruler: encode spin-spin coupling constants into a Hamiltonian, use OTOC to extract inter-atomic distances.',
+    template: {
+      name: 'NMR Molecular Ruler',
+      description: 'Encodes NMR J-coupling constants as qubit-qubit interactions. OTOC echo reveals distance information beyond classical NMR resolution.',
+      qubits: 4, register_type: 'standard',
+      steps: [
+        { type:'init', desc:'Initialize spin system |0000⟩' },
+        { type:'gate', desc:'Prepare thermal equilibrium', gate:'H', target:0 },
+        { type:'gate_sequence', desc:'Apply J-coupling Hamiltonian', gates:'J_COUPLING', params:{ J12:7.0, J13:1.5, J14:0.3, J23:5.2 } },
+        { type:'peek', desc:'State after coupling evolution' },
+        { type:'gate', desc:'Perturbation pulse on spin 1', gate:'X', target:0 },
+        { type:'gate_sequence', desc:'Reverse coupling evolution', gates:'J_COUPLING_REV', params:{ J12:-7.0, J13:-1.5, J14:-0.3, J23:-5.2 } },
+        { type:'peek', desc:'Echo signal — encodes distance information' },
+        { type:'measure', desc:'Sample distance spectrum' }
+      ],
+      observables: ['spin_distances','coupling_map','echo_amplitude'],
+      data_points: { J12:7.0, J13:1.5, J14:0.3, J23:5.2, molecule:'ethanol-like' },
+      export_format: 'json'
+    }
+  },
+  grover_opt: {
+    name: 'Grover Search / Optimization',
+    desc: 'Find optimal solutions in unstructured search spaces with quadratic speedup.',
+    prompt: 'Search for target value in a 2^n space using Grover\'s algorithm. Show the quadratic speedup.',
+    template: {
+      name: 'Grover Unstructured Search',
+      description: 'Grover\'s algorithm: O(√N) search in 2^n items. Uses MDB built-in grover() plus register inspection.',
+      qubits: 8, register_type: 'standard',
+      steps: [
+        { type:'builtin', desc:'Run Grover search', algorithm:'grover', params:{ n_qubits:8, target:42 } },
+        { type:'compare', desc:'Classical brute-force comparison', classical_ops:256, quantum_ops:16 }
+      ],
+      observables: ['found_target','iterations','speedup_ratio'],
+      export_format: 'json'
+    }
+  },
+  shor_factor: {
+    name: 'Shor Factoring',
+    desc: 'Factor integers via quantum period-finding.',
+    prompt: 'Factor composite integers using Shor\'s algorithm. Show period-finding and how it reveals the prime factors.',
+    template: {
+      name: 'Shor Integer Factoring',
+      description: 'Shor\'s algorithm: polynomial-time integer factoring via quantum period-finding.',
+      qubits: 0, register_type: 'builtin',
+      steps: [
+        { type:'builtin', desc:'Factor N=35', algorithm:'shor', params:{ N:35 } },
+        { type:'builtin', desc:'Factor batch', algorithm:'shor_batch', params:{ numbers:[15,21,33,35,77,91,143] } }
+      ],
+      observables: ['factors','period','time_ms'],
+      export_format: 'json'
+    }
+  },
+  entangle_study: {
+    name: 'Entanglement Laboratory',
+    desc: 'Create Bell/GHZ/W states and study their properties with peek/fork.',
+    prompt: 'Create maximally entangled states and study non-local correlations. Use peek to inspect superposition and fork to compare branches.',
+    template: {
+      name: 'Entanglement Study',
+      description: 'Create and characterize entangled states. MDB peek() reveals full state — impossible on hardware.',
+      qubits: 6, register_type: 'standard',
+      steps: [
+        { type:'init', desc:'Initialize |000000⟩' },
+        { type:'gate', desc:'Hadamard on qubit 0', gate:'H', target:0 },
+        { type:'gate_sequence', desc:'CNOT cascade → GHZ state', gates:'CNOT_CASCADE', params:{} },
+        { type:'peek', desc:'Inspect GHZ state — should see |000000⟩ + |111111⟩' },
+        { type:'fork', desc:'Fork before measurement' },
+        { type:'measure', desc:'Measure — collapses to 000000 or 111111' },
+        { type:'peek_fork', desc:'Fork still in superposition (MDB advantage)' }
+      ],
+      observables: ['state_vector','entanglement_witness','measurement_correlation'],
+      export_format: 'json'
+    }
+  },
+  teleport: {
+    name: 'Quantum Teleportation',
+    desc: 'Teleport a quantum state using entanglement and classical bits.',
+    prompt: 'Demonstrate quantum teleportation using MDB built-in teleport function.',
+    template: {
+      name: 'Quantum Teleportation',
+      description: 'Teleport a quantum state |ψ⟩ = α|0⟩ + β|1⟩ from Alice to Bob using entanglement.',
+      qubits: 3, register_type: 'builtin',
+      steps: [
+        { type:'builtin', desc:'Teleport α=0.6, β=0.8', algorithm:'teleport', params:{ alpha_re:0.6, beta_re:0.8 } },
+        { type:'builtin', desc:'Teleport α=1/√2, β=1/√2', algorithm:'teleport', params:{ alpha_re:0.7071, beta_re:0.7071 } }
+      ],
+      observables: ['fidelity','measurement_basis','reconstructed_state'],
+      export_format: 'json'
+    }
+  },
+  custom: {
+    name: 'Custom Experiment',
+    desc: 'Describe your problem — an experiment template is generated from your description.',
+    prompt: '',
+    template: null
+  }
+};
 
 function openExperimentLab() {
   createWindow({
     title: 'Experiment Lab', icon: '🔬', appType: 'experiment',
-    width: 1000, height: 650,
+    width: 1080, height: 660,
     body: `
-      <div class="lab">
-        <div class="lab-sidebar">
-          <div class="section">
-            <h4>Problem Type</h4>
-            <div class="form-group">
-              <select id="__EXP_TYPE__" onchange="expTypeChanged(this)">
-                <option value="custom">Custom Problem</option>
-                <option value="optimization">Combinatorial Optimization</option>
-                <option value="search">State Space Search</option>
-                <option value="variational">Variational (QAOA)</option>
-                <option value="mdb_demo">MDB Capabilities Demo (peek/fork/replay)</option>
-              </select>
-            </div>
-          </div>
-          <div class="section">
-            <h4>State Space</h4>
-            <div class="form-group">
-              <label>Decision Variables <span class="required">*</span></label>
-              <input type="number" id="__EXP_VARS__" value="8" min="1">
-              <div class="hint">Decision variables (positions). Sparse register — no limit, memory scales with populated states only.</div>
-            </div>
-            <div class="form-group">
-              <label>Variable Names</label>
-              <textarea id="__EXP_VARNAMES__" rows="3" placeholder="One per line:&#10;filtration_upgrade&#10;chemical_treatment&#10;policy_change"></textarea>
-            </div>
-          </div>
-          <div class="section">
-            <h4>Data Source <span class="required">*</span></h4>
-            <div class="form-group">
-              <label>Source Description</label>
-              <input type="text" id="__EXP_SOURCE__" placeholder="e.g., EPA 2025 Dataset">
-            </div>
-            <div class="form-group">
-              <label>Source URL / DOI</label>
-              <input type="text" id="__EXP_DOI__" placeholder="https://doi.org/...">
-            </div>
-            <div class="form-group">
-              <label>Constraint Data (JSON)</label>
-              <textarea id="__EXP_DATA__" rows="4" placeholder='{"max_cost": 1000000, "min_reduction": 0.7, "facilities": 500}'></textarea>
-            </div>
-          </div>
-          <div class="section">
-            <h4>Fitness Function <span class="required">*</span></h4>
-            <div class="form-group">
-              <label>Optimization Goal</label>
-              <select id="__EXP_GOAL__">
-                <option value="maximize">Maximize</option>
-                <option value="minimize">Minimize</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Fitness Expression</label>
-              <textarea id="__EXP_FITNESS__" rows="3" placeholder="JavaScript expression using bits[] and data{}:&#10;e.g., bits.filter(b=>b===1).length * data.weight - data.cost"></textarea>
-              <div class="hint">bits[]: binary array, data{}: your constraint data</div>
-            </div>
-          </div>
-          <div class="section">
-            <h4>Search Parameters</h4>
-            <div class="form-group">
-              <label>Search Depth</label>
-              <input type="number" id="__EXP_DEPTH__" value="4" min="1" max="10">
-            </div>
-            <div class="form-group">
-              <label>QAOA Layers (p)</label>
-              <input type="number" id="__EXP_QAOA_P__" value="3" min="1" max="10">
-            </div>
-            <div class="form-group">
-              <label>Random Seed</label>
-              <input type="number" id="__EXP_SEED__" value="42">
-            </div>
-          </div>
+      <div class="explab">
+        <div class="explab-toolbar">
+          <select id="__EL_PRESET__" onchange="elLoadPreset(this)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:4px;font-size:12px;">
+            <option value="otoc">🌊 OTOC / Quantum Echoes</option>
+            <option value="nmr_ruler">🧪 NMR Molecular Ruler</option>
+            <option value="grover_opt">🔍 Grover Search</option>
+            <option value="shor_factor">🔑 Shor Factoring</option>
+            <option value="entangle_study">🔗 Entanglement Lab</option>
+            <option value="teleport">📡 Quantum Teleportation</option>
+            <option value="custom">🛠️ Custom (describe your experiment)</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="elGenerate(this)">🧠 Generate Template</button>
+          <span style="font-size:9px;padding:2px 6px;border-radius:8px;background:${localStorage.getItem('mdb_gemini_key')?'rgba(34,197,94,.15)':'rgba(255,255,255,.06)'};color:${localStorage.getItem('mdb_gemini_key')?'var(--green)':'var(--text-dim)'};">${localStorage.getItem('mdb_gemini_key')?'🤖 AI Connected':'⚙️ AI: add key in Settings'}</span>
+          <button class="btn btn-secondary btn-sm" onclick="elRunTemplate(this)">▶ Run</button>
+          <button class="btn btn-secondary btn-sm" onclick="elExportTemplate(this)">📤 Export Template</button>
+          <button class="btn btn-secondary btn-sm" onclick="elImportTemplate(this)">📥 Import</button>
+          <span style="flex:1;"></span>
+          <span style="font-size:10px;color:var(--text-dim);">Templates are portable JSON — run on any MDB software</span>
         </div>
-        <div class="lab-main">
-          <div class="lab-toolbar">
-            <button class="btn btn-primary" onclick="runExperiment(this)">▶ Run Experiment</button>
-            <button class="btn btn-secondary" onclick="validateExperiment(this)">✓ Validate Inputs</button>
-            <button class="btn btn-secondary" onclick="exportExperiment(this)">💾 Export Manifest</button>
-            <button class="btn btn-secondary" onclick="clearExperimentResults(this)">🗑 Clear</button>
-            <div style="flex:1"></div>
-            <span class="badge badge-blue" id="__EXP_STATUS__">Ready</span>
+        <div class="explab-body">
+          <div class="explab-design">
+            <div class="explab-design-head">🧠 Experiment Design</div>
+            <div class="explab-prompt">
+              <textarea id="__EL_PROMPT__" placeholder="Describe your experiment in plain English...&#10;&#10;Example: Run an OTOC echo experiment on a 6-qubit spin chain.&#10;Use nearest-neighbor Ising coupling strength 0.5.&#10;Perturb qubit 0. Measure echo fidelity."></textarea>
+            </div>
+            <div class="explab-data">
+              <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);margin-bottom:4px;">Data Points (optional — JSON or key=value)</div>
+              <textarea id="__EL_DATA__" placeholder='{"coupling_strength": 0.5, "target_qubit": 0}&#10;or: J12=7.0, J13=1.5, molecule=ethanol'></textarea>
+            </div>
+            <div class="explab-template-area" id="__EL_TPL__">
+              <div style="text-align:center;padding:40px 20px;color:var(--text-dim);">
+                <div style="font-size:32px;margin-bottom:10px;">🔬</div>
+                <div style="font-size:13px;">Select a preset or describe your experiment</div>
+                <div style="font-size:11px;margin-top:4px;">Click <strong>Generate Template</strong> to create a runnable MDB experiment</div>
+              </div>
+            </div>
+            <div class="explab-lib">
+              <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);margin-bottom:4px;">Saved Experiments</div>
+              <select id="__EL_LIB__" onchange="elLoadSaved(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:5px;border-radius:4px;font-size:11px;">
+                <option value="">— none saved —</option>
+              </select>
+            </div>
           </div>
-          <div class="lab-content" id="__EXP_RESULTS__">
-            <div style="text-align:center;padding:60px 20px;color:var(--text-muted);">
-              <div style="font-size:48px;margin-bottom:16px;">🔬</div>
-              <h3 style="font-size:16px;margin-bottom:8px;color:var(--text-dim);">MDB Experiment Lab</h3>
-              <p style="max-width:500px;margin:0 auto;line-height:1.6;">
-                Define a real-world problem, provide real data, and let MDB's discovery engine
-                search the solution space using capabilities impossible on classical or quantum hardware.
-              </p>
-              <p style="margin-top:12px;font-size:12px;">
-                Configure the problem in the sidebar, then click <strong>Run Experiment</strong>.
-              </p>
+          <div class="explab-runner">
+            <div class="explab-runner-head">
+              <span>⚡ Execution</span>
+              <span id="__EL_STATUS__" style="font-size:10px;color:var(--text-dim);">Ready</span>
+            </div>
+            <div class="explab-runner-body" id="__EL_RESULTS__">
+              <div style="text-align:center;padding:40px 20px;color:var(--text-dim);">
+                <div style="font-size:32px;margin-bottom:10px;">▶</div>
+                <div style="font-size:12px;">Generate a template, then click <strong>Run</strong></div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     `,
     onInit: (winId, el) => {
-      // Fix IDs to be unique per window
-      const ids = ['EXP_TYPE','EXP_VARS','EXP_VARNAMES','EXP_SOURCE','EXP_DOI','EXP_DATA',
-                   'EXP_GOAL','EXP_FITNESS','EXP_DEPTH','EXP_QAOA_P','EXP_SEED','EXP_STATUS','EXP_RESULTS'];
-      ids.forEach(id => {
-        const elem = el.querySelector(`[id="__${id}__"]`);
-        if (elem) elem.id = `${id}-${winId}`;
+      ['EL_PRESET','EL_PROMPT','EL_DATA','EL_TPL','EL_LIB','EL_STATUS','EL_RESULTS'].forEach(k => {
+        const e = el.querySelector(`[id="__${k}__"]`);
+        if (e) e.id = k + '-' + winId;
       });
-      // Store winId for use by button handlers
-      el.dataset.winId = winId;
+      elShowPreset(winId, 'otoc');
+      elLoadLibrary(winId);
     }
   });
 }
 
-function expTypeChanged(selectEl) {
-  const win = selectEl.closest('.window');
-  if (!win) return;
-  const winId = win.dataset.winId || win.id;
-  const type = selectEl.value;
-  const statusEl = document.getElementById(`EXP_STATUS-${winId}`);
-  const resultsEl = document.getElementById(`EXP_RESULTS-${winId}`);
+let elCurrentTemplate = {};
 
-  if (type === 'mdb_demo') {
-    // Show description for MDB demo
-    if (resultsEl) resultsEl.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-muted);">
-      <div style="font-size:48px;margin-bottom:16px;">🔬</div>
-      <h3 style="color:var(--text);">MDB Capabilities Proof</h3>
-      <p>Tests three operations provably impossible on quantum hardware:</p>
-      <ul style="text-align:left;max-width:400px;margin:16px auto;line-height:2;">
-        <li><strong>peek()</strong> — non-destructive full state readout</li>
-        <li><strong>fork()</strong> — state cloning (violates no-cloning theorem)</li>
-        <li><strong>deterministic replay</strong> — same seed → identical output</li>
-      </ul>
-      <p style="font-size:13px;">Click <strong>Run Experiment</strong> to execute the proof suite.</p>
-    </div>`;
-  } else if (type === 'optimization') {
-    if (resultsEl) resultsEl.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text-muted);"><div style="font-size:48px;margin-bottom:16px;">⚡</div><p>Combinatorial optimization via sparse register search.<br>Define variables, fitness function, and constraints, then run.</p></div>`;
-  } else if (type === 'search') {
-    if (resultsEl) resultsEl.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text-muted);"><div style="font-size:48px;margin-bottom:16px;">🔍</div><p>State space search using MDB's variational layers.<br>Explore large spaces without brute-force enumeration.</p></div>`;
-  } else if (type === 'variational') {
-    if (resultsEl) resultsEl.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text-muted);"><div style="font-size:48px;margin-bottom:16px;">🌀</div><p>QAOA-style variational optimization.<br>Multiple annealing layers with temperature scheduling.</p></div>`;
-  } else {
-    if (resultsEl) resultsEl.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text-muted);"><div style="font-size:48px;margin-bottom:16px;">🔬</div><p>Results will appear here. Configure the problem in the sidebar, then click <strong>Run Experiment</strong>.</p></div>`;
-  }
-  if (statusEl) { statusEl.className = 'badge badge-blue'; statusEl.textContent = 'Ready'; }
-}
+function elWinId(el) { return el.closest('.window').dataset.winId || el.closest('.window').id; }
 
-function getExpEl(btnOrEl, suffix) {
-  const win = btnOrEl.closest('.window');
-  const winId = win.dataset.winId || win.id;
-  return document.getElementById(`${suffix}-${winId}`);
-}
+function elLoadPreset(sel) { elShowPreset(elWinId(sel), sel.value); }
 
-function validateExperiment(btn) {
-  const win = btn.closest('.window');
-  const winId = win.dataset.winId || win.id;
-  const errors = [];
-
-  const vars = parseInt(document.getElementById(`EXP_VARS-${winId}`).value);
-  if (!vars || vars < 1) errors.push('Decision Variables must be at least 1');
-
-  const source = document.getElementById(`EXP_SOURCE-${winId}`).value.trim();
-  if (!source) errors.push('Data Source description is required');
-
-  const fitnessExpr = document.getElementById(`EXP_FITNESS-${winId}`).value.trim();
-  if (!fitnessExpr) errors.push('Fitness Expression is required');
-
-  const dataStr = document.getElementById(`EXP_DATA-${winId}`).value.trim();
-  if (dataStr) {
-    try { JSON.parse(dataStr); } catch(e) { errors.push('Constraint Data must be valid JSON'); }
-  }
-
-  const statusEl = document.getElementById(`EXP_STATUS-${winId}`);
-  const resultsEl = document.getElementById(`EXP_RESULTS-${winId}`);
-
-  if (errors.length > 0) {
-    statusEl.className = 'badge badge-red';
-    statusEl.textContent = `${errors.length} error(s)`;
-    resultsEl.innerHTML = `<div class="result-card"><h4 style="color:var(--red)">⚠ Validation Failed</h4><pre style="color:var(--red)">${errors.map((e,i)=>`${i+1}. ${e}`).join('\n')}</pre></div>`;
-  } else {
-    statusEl.className = 'badge badge-green';
-    statusEl.textContent = 'Valid ✓';
-    resultsEl.innerHTML = `<div class="result-card"><h4 style="color:var(--green)">✓ All inputs valid</h4><pre>Decision variables: ${vars} positions\nSparse register: stores only populated states (not 2^${vars})\nData source: ${source}\nReady to run.</pre></div>`;
+function elShowPreset(winId, key) {
+  const preset = EXPLAB_PRESETS[key];
+  if (!preset) return;
+  const promptEl = document.getElementById('EL_PROMPT-' + winId);
+  const dataEl = document.getElementById('EL_DATA-' + winId);
+  const tplEl = document.getElementById('EL_TPL-' + winId);
+  if (promptEl) promptEl.value = preset.prompt || '';
+  if (dataEl) dataEl.value = preset.template?.data_points ? JSON.stringify(preset.template.data_points, null, 2) : '';
+  if (preset.template) {
+    elCurrentTemplate[winId] = JSON.parse(JSON.stringify(preset.template));
+    elRenderTemplate(winId);
+  } else if (tplEl) {
+    elCurrentTemplate[winId] = null;
+    tplEl.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-dim);"><div style="font-size:13px;">Describe your experiment above and click <strong>Generate Template</strong></div></div>`;
   }
 }
 
-// ── Seeded PRNG (deterministic replay) ─────────────────────────────
-function mdbRng(seed) {
-  let s = seed ^ 0xDEADBEEF;
-  return function() {
-    s = Math.imul(s ^ (s >>> 16), 0x45d9f3b);
-    s = Math.imul(s ^ (s >>> 16), 0x45d9f3b);
-    s ^= s >>> 16;
-    return (s >>> 0) / 4294967296;
-  };
+function elRenderTemplate(winId) {
+  const tpl = elCurrentTemplate[winId];
+  const tplEl = document.getElementById('EL_TPL-' + winId);
+  if (!tpl || !tplEl) return;
+  const stepColors = { init:'var(--text-dim)', gate:'var(--accent-glow)', gate_sequence:'var(--cyan)', peek:'var(--green)', fork:'var(--magenta)', fidelity:'var(--amber)', measure:'var(--red)', builtin:'var(--cyan)', compare:'var(--amber)', peek_fork:'var(--magenta)' };
+  const stepIcons = { init:'⚡', gate:'⊞', gate_sequence:'⊞⊞', peek:'👁', fork:'🔀', fidelity:'📐', measure:'📏', builtin:'🧬', compare:'⚖️', peek_fork:'👁' };
+  let h = `<div style="margin-bottom:10px;">`;
+  h += `<div style="font-size:14px;font-weight:700;">${escapeHtml(tpl.name)}</div>`;
+  h += `<div style="font-size:11px;color:var(--text-dim);margin-top:2px;">${escapeHtml(tpl.description)}</div>`;
+  h += `<div style="margin-top:8px;display:flex;gap:12px;font-size:11px;">`;
+  h += `<span style="color:var(--accent-glow);">Qubits: <strong>${tpl.qubits||'auto'}</strong></span>`;
+  h += `<span style="color:var(--cyan);">Register: <strong>${tpl.register_type||'standard'}</strong></span>`;
+  h += `<span style="color:var(--green);">Steps: <strong>${tpl.steps.length}</strong></span>`;
+  h += `</div></div>`;
+  h += `<div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);margin:12px 0 6px;">Execution Plan</div>`;
+  for (let i = 0; i < tpl.steps.length; i++) {
+    const s = tpl.steps[i], color = stepColors[s.type]||'var(--text-dim)', icon = stepIcons[s.type]||'•';
+    h += `<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);">`;
+    h += `<span style="color:${color};font-size:12px;width:20px;text-align:center;flex-shrink:0;">${icon}</span>`;
+    h += `<div style="flex:1;"><div style="font-size:12px;">${escapeHtml(s.desc)}</div>`;
+    if (s.gate) h += `<span style="font-size:10px;font-family:var(--mono);color:${color};background:rgba(255,255,255,.04);padding:1px 6px;border-radius:3px;margin-top:2px;display:inline-block;">${s.gate}(${s.target??''})</span>`;
+    if (s.params) h += `<div style="font-size:10px;font-family:var(--mono);color:var(--text-dim);margin-top:2px;">${JSON.stringify(s.params)}</div>`;
+    if (s.algorithm) h += `<span style="font-size:10px;font-family:var(--mono);color:var(--cyan);margin-top:2px;display:inline-block;">${s.algorithm}()</span>`;
+    h += `</div><span style="font-size:9px;color:var(--text-muted);flex-shrink:0;">${i+1}/${tpl.steps.length}</span></div>`;
+  }
+  if (tpl.observables) {
+    h += `<div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);margin:12px 0 6px;">Observables</div><div style="display:flex;gap:6px;flex-wrap:wrap;">`;
+    for (const obs of tpl.observables) h += `<span style="font-size:10px;background:rgba(99,102,241,.12);color:var(--accent-glow);padding:3px 8px;border-radius:10px;">${obs}</span>`;
+    h += `</div>`;
+  }
+  h += `<div style="margin-top:10px;display:flex;gap:6px;">`;
+  h += `<button class="btn btn-secondary btn-sm" onclick="elEditTemplate('${winId}')">✏️ Edit JSON</button>`;
+  h += `<button class="btn btn-secondary btn-sm" onclick="elSaveTemplate('${winId}')">💾 Save</button>`;
+  h += `</div>`;
+  tplEl.innerHTML = h;
 }
 
-// ── Sparse Register (JS implementation matching sparse_register.rs) ─
-// Only stores populated states — HashMap<u64, {bits, fitness}>
-class SparseStateRegister {
-  constructor() { this.states = new Map(); this.insertions = 0; this.prunes = 0; }
-  set(key, entry) { this.states.set(key, entry); this.insertions++; }
-  get(key) { return this.states.get(key); }
-  get size() { return this.states.size; }
-  // peek() — non-destructive readout (impossible on quantum hardware)
-  peek() { return Array.from(this.states.values()); }
-  // fork() — full state clone (violates no-cloning theorem on quantum hardware)
-  fork() {
-    const copy = new SparseStateRegister();
-    for (const [k, v] of this.states) copy.states.set(k, { ...v, bits: [...v.bits] });
-    copy.insertions = this.insertions;
-    copy.prunes = this.prunes;
-    return copy;
-  }
-  prune(threshold) {
-    for (const [k, v] of this.states) {
-      if (v.fitness < threshold) { this.states.delete(k); this.prunes++; }
-    }
-  }
-  sorted(goal) {
-    return this.peek().sort((a, b) => goal === 'maximize' ? b.fitness - a.fitness : a.fitness - b.fitness);
-  }
-  memoryBytes() {
-    // Each entry: 8 (key) + nVars (bits) + 8 (fitness float) + ~32 (Map overhead)
-    if (this.size === 0) return 0;
-    const sample = this.states.values().next().value;
-    return this.size * (8 + (sample.bits ? sample.bits.length : 0) + 8 + 32);
-  }
-}
+async function elGenerate(btn) {
+  const winId = elWinId(btn);
+  const prompt = document.getElementById('EL_PROMPT-' + winId)?.value || '';
+  const dataStr = document.getElementById('EL_DATA-' + winId)?.value || '';
+  const presetKey = document.getElementById('EL_PRESET-' + winId)?.value || 'custom';
+  const tplEl = document.getElementById('EL_TPL-' + winId);
 
-// ── Variational Layer (MDB search kernel) ──────────────────────────
-function mdbVariationalSearch(register, fitnessFn, goal, rng, layers, retainPct, mutationRange) {
-  const layerLog = [];
-  let prevBestFitness = goal === 'maximize' ? -Infinity : Infinity;
-
-  for (let layer = 0; layer < layers; layer++) {
-    const temp = 0.15 - (0.14 * layer / Math.max(layers - 1, 1)); // annealing
-    const sorted = register.sorted(goal);
-    const retainCount = Math.max(2, Math.ceil(sorted.length * retainPct));
-    const parents = sorted.slice(0, retainCount);
-
-    // fork() checkpoint before mutation (MDB capability — can't do this on quantum hardware)
-    const checkpoint = register.fork();
-
-    // Generate children via mutation
-    const children = [];
-    const nChildren = Math.max(retainCount * 3, 50);
-    for (let c = 0; c < nChildren; c++) {
-      const parent = parents[Math.floor(rng() * parents.length)];
-      const child = [...parent.bits];
-      // Mutate: flip bits with probability proportional to temperature
-      for (let b = 0; b < child.length; b++) {
-        if (rng() < temp * mutationRange) child[b] = child[b] === 1 ? 0 : 1;
-      }
-      const key = bitsToKey(child);
-      let fitness;
-      try { fitness = fitnessFn(child); } catch(e) { fitness = NaN; }
-      if (!isNaN(fitness) && isFinite(fitness)) {
-        children.push({ key, bits: child, fitness });
-      }
-    }
-
-    // Insert children into register (sparse — only if above threshold)
-    const allFitnesses = [...parents.map(p => p.fitness), ...children.map(c => c.fitness)].filter(f => isFinite(f));
-    const minF = Math.min(...allFitnesses);
-    const maxF = Math.max(...allFitnesses);
-    const pruneThreshold = minF + (maxF - minF) * 0.35;
-
-    for (const child of children) {
-      if (child.fitness >= pruneThreshold || goal === 'minimize' && child.fitness <= (maxF - (maxF-minF)*0.35)) {
-        register.set(child.key, child);
-      }
-    }
-
-    register.prune(goal === 'maximize' ? pruneThreshold : -Infinity);
-
-    const best = register.sorted(goal)[0];
-    const bestFitness = best ? best.fitness : prevBestFitness;
-    const improved = goal === 'maximize' ? bestFitness > prevBestFitness : bestFitness < prevBestFitness;
-
-    layerLog.push({
-      layer: layer + 1,
-      temperature: temp.toFixed(4),
-      population: register.size,
-      best_fitness: bestFitness,
-      children_generated: children.length,
-      improved,
-    });
-
-    // Early convergence check
-    if (Math.abs(bestFitness - prevBestFitness) < 0.00005 && layer > 2) {
-      layerLog[layerLog.length - 1].converged = true;
-      break;
-    }
-    prevBestFitness = bestFitness;
-  }
-  return layerLog;
-}
-
-function bitsToKey(bits) {
-  // Pack bits into a numeric key (like sparse_register.rs u64 key)
-  let key = 0n;
-  for (let i = 0; i < bits.length; i++) {
-    if (bits[i]) key |= (1n << BigInt(bits.length - 1 - i));
-  }
-  return key.toString(); // Use string keys for Map (JS BigInt can't be Map key directly)
-}
-
-function runExperiment(btn) {
-  const win = btn.closest('.window');
-  const winId = win.dataset.winId || win.id;
-  const statusEl = document.getElementById(`EXP_STATUS-${winId}`);
-  const resultsEl = document.getElementById(`EXP_RESULTS-${winId}`);
-  const expType = document.getElementById(`EXP_TYPE-${winId}`).value;
-
-  // Handle MDB Capabilities Demo separately
-  if (expType === 'mdb_demo') {
-    return runMdbCapabilitiesDemo(btn);
-  }
-
-  // Gather inputs
-  const nVars = parseInt(document.getElementById(`EXP_VARS-${winId}`).value) || 8;
-  const varNames = document.getElementById(`EXP_VARNAMES-${winId}`).value.trim().split('\n').filter(Boolean);
-  const source = document.getElementById(`EXP_SOURCE-${winId}`).value.trim();
-  const doi = document.getElementById(`EXP_DOI-${winId}`).value.trim();
-  const dataStr = document.getElementById(`EXP_DATA-${winId}`).value.trim();
-  const goal = document.getElementById(`EXP_GOAL-${winId}`).value;
-  const fitnessExpr = document.getElementById(`EXP_FITNESS-${winId}`).value.trim();
-  const depth = parseInt(document.getElementById(`EXP_DEPTH-${winId}`).value) || 4;
-  const seed = parseInt(document.getElementById(`EXP_SEED-${winId}`).value) || 42;
-
-  // Validate
-  const errors = [];
-  if (nVars < 1) errors.push('Variables must be at least 1');
-  if (!source) errors.push('Data source is required — this is science, not a toy');
-  if (!fitnessExpr) errors.push('Fitness expression is required');
-
-  let constraintData = {};
-  if (dataStr) {
-    try { constraintData = JSON.parse(dataStr); } catch(e) { errors.push('Invalid JSON in constraint data'); }
-  }
-
-  if (errors.length > 0) {
-    statusEl.className = 'badge badge-red';
-    statusEl.textContent = 'Errors';
-    resultsEl.innerHTML = `<div class="result-card"><h4 style="color:var(--red)">⚠ Cannot Run — Missing Required Data</h4><pre style="color:var(--red)">${errors.join('\n')}</pre><p style="margin-top:8px;font-size:12px;color:var(--text-dim)">Every field marked with * is required. MDB refuses to run without complete input data.</p></div>`;
+  if (presetKey !== 'custom' && EXPLAB_PRESETS[presetKey]?.template) {
+    const tpl = JSON.parse(JSON.stringify(EXPLAB_PRESETS[presetKey].template));
+    const data = elParseData(dataStr);
+    if (data) { tpl.data_points = { ...(tpl.data_points||{}), ...data }; if (data.qubits) tpl.qubits = data.qubits; }
+    elCurrentTemplate[winId] = tpl;
+    elRenderTemplate(winId);
     return;
   }
 
-  statusEl.className = 'badge badge-amber';
-  statusEl.textContent = 'Running...';
-  btn.disabled = true;
-
-  // Run experiment asynchronously
-  setTimeout(() => {
+  // Custom experiment — try AI first, fallback to pattern matching
+  const geminiKey = localStorage.getItem('mdb_gemini_key');
+  if (geminiKey && prompt.trim()) {
+    if (tplEl) tplEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--accent-glow);"><div style="font-size:24px;margin-bottom:10px;">🧠</div><div>AI is designing your experiment...</div></div>';
     try {
-      const t0 = performance.now();
-      const rng = mdbRng(seed);
-
-      // Build fitness function from expression
-      let fitnessFn;
-      try {
-        fitnessFn = new Function('bits', 'data', `return (${fitnessExpr});`);
-      } catch(e) {
-        throw new Error(`Invalid fitness expression: ${e.message}`);
-      }
-      const evalFitness = (bits) => fitnessFn(bits, constraintData);
-
-      // ── SPARSE REGISTER APPROACH ──────────────────────────────────
-      // Unlike brute-force (2^n enumeration), we sample + evolve.
-      // For small n (≤20), we can enumerate. For large n, we use
-      // Monte Carlo sampling + variational layers.
-      const register = new SparseStateRegister();
-
-      const totalStateSpace = nVars <= 52 ? Math.pow(2, nVars) : Infinity;
-      const useFullEnumeration = nVars <= 18;
-      let sampledCount = 0;
-
-      if (useFullEnumeration) {
-        // Small space: enumerate all states (still store sparsely)
-        const total = 1 << nVars;
-        for (let i = 0; i < total; i++) {
-          const bits = [];
-          for (let b = nVars - 1; b >= 0; b--) bits.push((i >> b) & 1);
-          let fitness;
-          try { fitness = evalFitness(bits); } catch(e) { fitness = NaN; }
-          if (!isNaN(fitness) && isFinite(fitness)) {
-            register.set(bitsToKey(bits), { bits, fitness });
-          }
-          sampledCount++;
-        }
-      } else {
-        // Large space: Monte Carlo population seeding
-        // Generate initial population via Latin Hypercube-style sampling
-        const popSize = Math.min(50000, Math.max(5000, nVars * 500));
-        for (let i = 0; i < popSize; i++) {
-          const bits = [];
-          for (let b = 0; b < nVars; b++) bits.push(rng() < 0.5 ? 1 : 0);
-          let fitness;
-          try { fitness = evalFitness(bits); } catch(e) { fitness = NaN; }
-          if (!isNaN(fitness) && isFinite(fitness)) {
-            register.set(bitsToKey(bits), { bits, fitness });
-          }
-          sampledCount++;
-        }
-        // Also seed with all-zeros and all-ones
-        const zeros = new Array(nVars).fill(0);
-        const ones = new Array(nVars).fill(1);
-        try {
-          const f0 = evalFitness(zeros), f1 = evalFitness(ones);
-          if (isFinite(f0)) register.set(bitsToKey(zeros), { bits: zeros, fitness: f0 });
-          if (isFinite(f1)) register.set(bitsToKey(ones), { bits: ones, fitness: f1 });
-        } catch(e) {}
-      }
-
-      // ── VARIATIONAL OPTIMIZATION LAYERS ───────────────────────────
-      const layers = Math.max(depth, 4);
-      const retainPct = 0.15;
-      const mutationRange = 0.6;
-
-      // peek() — read current best before optimization (non-destructive)
-      const preOptBest = register.sorted(goal)[0];
-      const preOptPeek = register.peek().length;
-
-      // fork() — save pre-optimization state for comparison
-      const preOptCheckpoint = register.fork();
-
-      const layerLog = mdbVariationalSearch(register, evalFitness, goal, rng, layers, retainPct, mutationRange);
-
-      const elapsed = performance.now() - t0;
-
-      // Final results
-      const sorted = register.sorted(goal);
-      const best = sorted[0];
-      const bestFitness = best ? best.fitness : 0;
-      const bestState = best ? best.bits : null;
-      const bestKey = best ? bitsToKey(best.bits) : 'N/A';
-
-      // Deterministic replay proof: re-run with same seed
-      const replayRng = mdbRng(seed);
-      const replayRegister = new SparseStateRegister();
-      if (useFullEnumeration) {
-        const total = 1 << nVars;
-        for (let i = 0; i < total; i++) {
-          const bits = [];
-          for (let b = nVars - 1; b >= 0; b--) bits.push((i >> b) & 1);
-          let f; try { f = evalFitness(bits); } catch(e) { f = NaN; }
-          if (!isNaN(f) && isFinite(f)) replayRegister.set(bitsToKey(bits), { bits, fitness: f });
-        }
-      } else {
-        const popSize = Math.min(50000, Math.max(5000, nVars * 500));
-        for (let i = 0; i < popSize; i++) {
-          const bits = [];
-          for (let b = 0; b < nVars; b++) bits.push(replayRng() < 0.5 ? 1 : 0);
-          let f; try { f = evalFitness(bits); } catch(e) { f = NaN; }
-          if (!isNaN(f) && isFinite(f)) replayRegister.set(bitsToKey(bits), { bits, fitness: f });
-        }
-        try {
-          const f0 = evalFitness(new Array(nVars).fill(0)), f1 = evalFitness(new Array(nVars).fill(1));
-          if (isFinite(f0)) replayRegister.set(bitsToKey(new Array(nVars).fill(0)), { bits: new Array(nVars).fill(0), fitness: f0 });
-          if (isFinite(f1)) replayRegister.set(bitsToKey(new Array(nVars).fill(1)), { bits: new Array(nVars).fill(1), fitness: f1 });
-        } catch(e) {}
-      }
-      mdbVariationalSearch(replayRegister, evalFitness, goal, replayRng, layers, retainPct, mutationRange);
-      const replayBest = replayRegister.sorted(goal)[0];
-      const replayMatch = replayBest && best && replayBest.fitness === best.fitness;
-
-      // Build variable decode
-      const varDecode = bestState ? bestState.map((v, i) => {
-        const name = varNames[i] || `var_${i}`;
-        return `  ${name}: ${v === 1 ? 'YES (active)' : 'NO (inactive)'}`;
-      }).join('\n') : 'N/A';
-
-      // Dense memory comparison
-      const denseBytes = nVars <= 52 ? Math.pow(2, nVars) * 16 : Infinity;
-      const sparseBytes = register.memoryBytes();
-
-      // Generate provenance
-      const manifest = {
-        experiment: {
-          timestamp: new Date().toISOString(),
-          mdb_version: mdb.version(),
-          seed,
-          deterministic: true,
-          deterministic_replay_verified: replayMatch,
-        },
-        problem: {
-          variables: nVars,
-          total_state_space: nVars <= 52 ? `2^${nVars} = ${totalStateSpace.toLocaleString()}` : `2^${nVars} (astronomical)`,
-          states_sampled: sampledCount,
-          sparse_register_entries: register.size,
-          variational_layers: layerLog.length,
-          optimization_goal: goal,
-        },
-        memory: {
-          sparse_register_bytes: sparseBytes,
-          dense_equivalent_bytes: denseBytes === Infinity ? `2^${nVars} × 16 (impossible to allocate)` : denseBytes.toLocaleString(),
-          compression_ratio: denseBytes === Infinity ? '∞' : (denseBytes / Math.max(sparseBytes, 1)).toFixed(1) + '×',
-        },
-        mdb_capabilities_used: {
-          peek: 'Non-destructive state readout (used before and after optimization)',
-          fork: 'State checkpoint before variational layers',
-          deterministic_replay: `Same seed (${seed}) → identical result: ${replayMatch ? 'VERIFIED ✓' : 'MISMATCH ✗'}`,
-          sparse_register: `${register.size} populated states stored (not ${nVars <= 52 ? totalStateSpace.toLocaleString() : '2^'+nVars})`,
-        },
-        data_provenance: {
-          source,
-          doi: doi || 'not provided',
-          constraint_data_hash: hashString(dataStr || '{}'),
-          retrieved: new Date().toISOString(),
-        },
-        results: {
-          best_state: bestState,
-          best_fitness: bestFitness,
-          best_key: bestKey,
-          top_5: sorted.slice(0, 5).map(c => ({ state: c.bits.join(''), fitness: c.fitness.toFixed(6) })),
-          wall_clock_ms: elapsed.toFixed(2),
-          states_in_register: register.size,
-          total_insertions: register.insertions,
-          total_prunes: register.prunes,
-        }
-      };
-
-      // Display results
-      statusEl.className = 'badge badge-green';
-      statusEl.textContent = 'Complete ✓';
-
-      resultsEl.innerHTML = `
-        <div class="result-card">
-          <h4>🎯 Discovery Result</h4>
-          <div style="margin-bottom:12px;">
-            <span class="metric"><span class="val">${bestFitness.toFixed(6)}</span> <span class="unit">best fitness</span></span>
-            <span class="metric"><span class="val">${register.size.toLocaleString()}</span> <span class="unit">sparse states</span></span>
-            <span class="metric"><span class="val">${elapsed.toFixed(1)}</span> <span class="unit">ms</span></span>
-            <span class="metric"><span class="val">${replayMatch ? '✓' : '✗'}</span> <span class="unit">replay verified</span></span>
-          </div>
-          <h4>Best Solution (key: ${bestKey})</h4>
-          <pre>${bestState ? bestState.join('') : 'N/A'}\n\nDecoded:\n${varDecode}</pre>
-        </div>
-        <div class="result-card">
-          <h4>🧬 Variational Optimization Log (${layerLog.length} layers)</h4>
-          <pre>${layerLog.map(l =>
-            `Layer ${String(l.layer).padStart(2)}: temp=${l.temperature}  pop=${String(l.population).padStart(5)}  best=${l.best_fitness.toFixed(6)}  children=${l.children_generated}${l.improved ? ' ↑' : ''}${l.converged ? ' [CONVERGED]' : ''}`
-          ).join('\n')}</pre>
-        </div>
-        <div class="result-card">
-          <h4>💾 Sparse Register vs Dense</h4>
-          <pre>Sparse register:  ${register.size.toLocaleString()} entries  (${(sparseBytes/1024).toFixed(1)} KB)
-Dense equivalent: ${nVars <= 52 ? totalStateSpace.toLocaleString() : '2^'+nVars} entries  (${denseBytes === Infinity ? 'impossible' : (denseBytes/1024/1024).toFixed(1)+' MB'})
-Compression:      ${denseBytes === Infinity ? '∞' : (denseBytes / Math.max(sparseBytes, 1)).toFixed(1)}×
-Insertions:       ${register.insertions.toLocaleString()}
-Prunes:           ${register.prunes.toLocaleString()}
-
-MDB capabilities exercised:
-  peek()  — read ${preOptPeek} states before optimization (non-destructive)
-  fork()  — checkpoint saved before variational layers (${preOptCheckpoint.size} states preserved)
-  replay  — seed ${seed} re-run: ${replayMatch ? 'IDENTICAL result ✓' : 'MISMATCH ✗'}</pre>
-        </div>
-        <div class="result-card">
-          <h4>📊 Top 10 Solutions</h4>
-          <pre>${sorted.slice(0, 10).map((c, i) =>
-            `${String(i+1).padStart(2)}. [${c.bits.join('')}]  fitness: ${c.fitness.toFixed(6)}`
-          ).join('\n')}</pre>
-        </div>
-        <div class="result-card">
-          <h4>📋 Full Reproducibility Manifest</h4>
-          <pre>${JSON.stringify(manifest, null, 2)}</pre>
-        </div>
-        <div class="result-card">
-          <h4>🔬 Data Provenance</h4>
-          <pre>Source: ${source}
-DOI/URL: ${doi || 'not provided'}
-Constraint Data Hash: ${manifest.data_provenance.constraint_data_hash}
-MDB-OS Version: ${mdb.version()}
-Timestamp: ${manifest.experiment.timestamp}
-Deterministic: YES — same seed (${seed}) produces identical output
-Replay verification: ${replayMatch ? 'PASSED ✓' : 'FAILED ✗'}</pre>
-        </div>
-      `;
-
-      // Save manifest to filesystem
-      const expName = `experiment_${Date.now()}.json`;
-      fsWriteFile(`/home/experiments/${expName}`, JSON.stringify(manifest, null, 2), expName);
-
+      const tpl = await elAIGenerate(prompt, dataStr, geminiKey);
+      elCurrentTemplate[winId] = tpl;
+      elRenderTemplate(winId);
+      return;
     } catch(e) {
-      statusEl.className = 'badge badge-red';
-      statusEl.textContent = 'Error';
-      resultsEl.innerHTML = `<div class="result-card"><h4 style="color:var(--red)">⚠ Experiment Failed</h4><pre style="color:var(--red)">${e.message}\n\n${e.stack || ''}</pre></div>`;
+      console.warn('AI generation failed, using pattern matching:', e);
+      if (tplEl) tplEl.innerHTML = `<div style="padding:12px;color:var(--amber);font-size:11px;">⚠️ AI unavailable (${escapeHtml(e.message||'error')}), using built-in template builder...</div>`;
+      await new Promise(r => setTimeout(r, 1200));
     }
-    btn.disabled = false;
-  }, 100);
+  }
+  elCurrentTemplate[winId] = elBuildCustomTemplate(prompt, dataStr);
+  elRenderTemplate(winId);
 }
 
-function exportExperiment(btn) {
-  const win = btn.closest('.window');
-  const winId = win.dataset.winId || win.id;
+async function elAIGenerate(prompt, dataStr, apiKey) {
+  const systemPrompt = `You are an MDB-OS experiment designer. Given a research question, produce a JSON experiment template.
 
-  const manifest = {
-    mdb_version: mdb.version(),
-    exported: new Date().toISOString(),
-    problem: {
-      variables: parseInt(document.getElementById(`EXP_VARS-${winId}`).value),
-      variable_names: document.getElementById(`EXP_VARNAMES-${winId}`).value.trim().split('\n').filter(Boolean),
-      goal: document.getElementById(`EXP_GOAL-${winId}`).value,
-      fitness_expression: document.getElementById(`EXP_FITNESS-${winId}`).value.trim(),
-      search_depth: parseInt(document.getElementById(`EXP_DEPTH-${winId}`).value),
-      qaoa_layers: parseInt(document.getElementById(`EXP_QAOA_P-${winId}`).value),
-      seed: parseInt(document.getElementById(`EXP_SEED-${winId}`).value),
-    },
-    data: {
-      source: document.getElementById(`EXP_SOURCE-${winId}`).value.trim(),
-      doi: document.getElementById(`EXP_DOI-${winId}`).value.trim(),
-      constraints: (() => { try { return JSON.parse(document.getElementById(`EXP_DATA-${winId}`).value.trim()); } catch(e) { return {}; } })(),
+The template must follow this exact schema:
+{
+  "name": "short experiment name",
+  "description": "what this experiment does and why",
+  "qubits": <number 2-64>,
+  "register_type": "standard" or "sparse",
+  "steps": [
+    { "type": "init", "desc": "description" },
+    { "type": "gate", "desc": "description", "gate": "H|X|Y|Z|CNOT|CZ|SWAP|T|S|RX|RY|RZ", "target": <qubit_index> },
+    { "type": "gate_sequence", "desc": "description", "gates": "FORWARD_EVOLVE|REVERSE_EVOLVE|J_COUPLING|CNOT_CASCADE|H_ALL|QFT", "params": {...} },
+    { "type": "peek", "desc": "inspect state without collapse (MDB exclusive)" },
+    { "type": "fork", "desc": "clone quantum state for comparison (MDB exclusive)" },
+    { "type": "fidelity", "desc": "compare forked states" },
+    { "type": "measure", "desc": "destructive measurement" },
+    { "type": "builtin", "desc": "description", "algorithm": "grover|shor|teleport|deutsch_jozsa", "params": {...} }
+  ],
+  "observables": ["list","of","measurements"],
+  "data_points": { optional user data },
+  "export_format": "json"
+}
+
+MDB advantages to leverage:
+- peek(): non-destructive state inspection (impossible on real quantum hardware)
+- fork(): clone quantum states (violates no-cloning theorem, MDB can do it)
+- sparse register: memory scales with populated states, not 2^n
+- deterministic: same input = same output every time
+
+Respond with ONLY the JSON template, no markdown, no explanation.`;
+
+  const userMsg = `Research question: ${prompt}${dataStr ? '\\nAdditional data: ' + dataStr : ''}`;
+
+  const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      system_instruction: { parts: [{ text: systemPrompt }] },
+      contents: [{ parts: [{ text: userMsg }] }],
+      generationConfig: { temperature: 0.3, maxOutputTokens: 2048 }
+    })
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.error?.message || 'API error ' + resp.status);
+  }
+  const json = await resp.json();
+  const text = json.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  // Extract JSON from the response (handle markdown code blocks)
+  const cleaned = text.replace(/^```json?\s*\n?/,'').replace(/\n?```\s*$/,'').trim();
+  const tpl = JSON.parse(cleaned);
+  // Validate minimum structure
+  if (!tpl.name || !tpl.steps || !Array.isArray(tpl.steps)) throw new Error('Invalid template structure');
+  return tpl;
+}
+
+function elParseData(str) {
+  if (!str.trim()) return null;
+  try { return JSON.parse(str); } catch(e) {}
+  const data = {};
+  str.split(/[,\n]/).map(s=>s.trim()).filter(Boolean).forEach(p => {
+    const [k,...rest] = p.split('=');
+    if (k && rest.length) { const v = rest.join('=').trim(); data[k.trim()] = isNaN(Number(v)) ? v : Number(v); }
+  });
+  return Object.keys(data).length ? data : null;
+}
+
+function elBuildCustomTemplate(prompt, dataStr) {
+  const p = (prompt||'').toLowerCase(), data = elParseData(dataStr) || {};
+  const qubits = data.qubits || (p.match(/(\d+)\s*qubit/) ? parseInt(p.match(/(\d+)\s*qubit/)[1]) : 6);
+  const steps = [{ type:'init', desc:`Initialize ${qubits}-qubit register` }];
+
+  if (p.includes('otoc') || p.includes('echo') || p.includes('time-reversal') || p.includes('time reversal')) {
+    const J = data.coupling || 0.5, layers = data.layers || 4, tq = data.perturb_qubit || 0;
+    steps.push({ type:'gate_sequence', desc:`Forward evolution (${layers} layers, J=${J})`, gates:'FORWARD_EVOLVE', params:{ layers, coupling:J } });
+    steps.push({ type:'peek', desc:'Snapshot: pre-perturbation' });
+    steps.push({ type:'fork', desc:'Fork for comparison' });
+    steps.push({ type:'gate', desc:`Perturb qubit ${tq}`, gate:'X', target:tq });
+    steps.push({ type:'gate_sequence', desc:'Reverse evolution', gates:'REVERSE_EVOLVE', params:{ layers, coupling:-J } });
+    steps.push({ type:'peek', desc:'Echo measurement' });
+    steps.push({ type:'fidelity', desc:'Echo fidelity vs unperturbed fork' });
+  } else if (p.includes('grover') || p.includes('search')) {
+    steps.push({ type:'builtin', desc:`Grover search target=${data.target||42}`, algorithm:'grover', params:{ n_qubits:qubits, target:data.target||42 } });
+  } else if (p.includes('shor') || p.includes('factor')) {
+    steps.push({ type:'builtin', desc:`Factor N=${data.N||35}`, algorithm:'shor', params:{ N:data.N||35 } });
+  } else if (p.includes('entangle') || p.includes('bell') || p.includes('ghz')) {
+    steps.push({ type:'gate', desc:'Hadamard qubit 0', gate:'H', target:0 });
+    steps.push({ type:'gate_sequence', desc:'CNOT cascade', gates:'CNOT_CASCADE', params:{} });
+    steps.push({ type:'peek', desc:'Inspect entangled state' });
+    steps.push({ type:'fork', desc:'Fork before measurement' });
+    steps.push({ type:'measure', desc:'Measure all' });
+    steps.push({ type:'peek_fork', desc:'Fork still in superposition' });
+  } else if (p.includes('teleport')) {
+    steps.push({ type:'builtin', desc:'Quantum teleportation', algorithm:'teleport', params:{ alpha_re:0.6, beta_re:0.8 } });
+  } else {
+    steps.push({ type:'gate_sequence', desc:'Hadamard all', gates:'H_ALL', params:{} });
+    steps.push({ type:'peek', desc:'Superposition state' });
+    if (p.includes('qft')) steps.push({ type:'gate_sequence', desc:'QFT', gates:'QFT', params:{} });
+    if (p.includes('evolve') || p.includes('hamiltonian') || p.includes('spin'))
+      steps.push({ type:'gate_sequence', desc:'Hamiltonian evolution', gates:'FORWARD_EVOLVE', params:{ layers:data.layers||4, coupling:data.coupling||0.5 } });
+    steps.push({ type:'fork', desc:'Fork state' });
+    steps.push({ type:'peek', desc:'Final state' });
+    steps.push({ type:'measure', desc:'Measurement' });
+  }
+  return { name: prompt.substring(0,60)||'Custom Experiment', description: prompt||'User-defined experiment',
+    qubits, register_type: qubits > 16 ? 'sparse' : 'standard', steps,
+    observables:['state_vector','probabilities','timing'], data_points: Object.keys(data).length ? data : undefined, export_format:'json' };
+}
+
+function elRunTemplate(btn) {
+  const winId = elWinId(btn), tpl = elCurrentTemplate[winId];
+  const resultsEl = document.getElementById('EL_RESULTS-' + winId);
+  const statusEl = document.getElementById('EL_STATUS-' + winId);
+  if (!tpl || !resultsEl) return;
+  statusEl.textContent = 'Running...'; statusEl.style.color = 'var(--amber)';
+  resultsEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-dim);">⏳ Executing...</div>';
+  setTimeout(() => {
+    try {
+      const results = elExecuteTemplate(tpl);
+      const totalMs = results.reduce((s,r) => s + (r.time||0), 0);
+      let h = `<div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:10px;">✅ ${escapeHtml(tpl.name)}</div>`;
+      h += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;">${results.length} steps — ${totalMs.toFixed(2)}ms total</div>`;
+      for (const r of results) {
+        const c = r.error ? 'var(--red)' : r.type==='peek'||r.type==='peek_fork' ? 'var(--green)' : r.type==='fidelity' ? 'var(--amber)' : 'var(--accent-glow)';
+        h += `<div class="explab-step" style="border-left-color:${c};"><div class="step-lbl">${r.label}${r.time ? ' — '+r.time.toFixed(2)+'ms' : ''}</div>`;
+        if (r.data) h += `<pre>${typeof r.data==='string' ? escapeHtml(r.data) : escapeHtml(JSON.stringify(r.data,null,2))}</pre>`;
+        if (r.error) h += `<div style="color:var(--red);font-size:11px;">${escapeHtml(r.error)}</div>`;
+        h += `</div>`;
+      }
+      h += `<div style="margin-top:12px;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);margin-bottom:6px;">Export Results</div>`;
+      h += `<div style="display:flex;gap:6px;flex-wrap:wrap;">`;
+      h += `<button class="btn btn-secondary btn-sm" onclick="elExportAs('${winId}','json')">📤 JSON</button>`;
+      h += `<button class="btn btn-secondary btn-sm" onclick="elExportAs('${winId}','csv')">📊 CSV</button>`;
+      h += `<button class="btn btn-secondary btn-sm" onclick="elExportAs('${winId}','md')">📄 Markdown</button>`;
+      h += `<button class="btn btn-secondary btn-sm" onclick="elExportAs('${winId}','txt')">📝 Text</button>`;
+      h += `<button class="btn btn-secondary btn-sm" onclick="elCopyResults('${winId}')">📋 Copy</button>`;
+      h += `</div>`;
+      resultsEl.innerHTML = h;
+      resultsEl._lastResults = results;
+      statusEl.textContent = 'Complete'; statusEl.style.color = 'var(--green)';
+    } catch(e) {
+      resultsEl.innerHTML = `<div style="color:var(--red);padding:20px;"><strong>Execution error:</strong><pre>${escapeHtml(e.message)}</pre></div>`;
+      statusEl.textContent = 'Error'; statusEl.style.color = 'var(--red)';
     }
-  };
+  }, 50);
+}
 
-  const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' });
+function elExecuteTemplate(tpl) {
+  const results = [], n = tpl.qubits || 6, useSparse = tpl.register_type === 'sparse';
+  let reg = null, forkReg = null;
+  for (const step of tpl.steps) {
+    const t0 = performance.now();
+    try {
+      switch(step.type) {
+        case 'init':
+          reg = useSparse ? new mdb.WasmSparseRegister(n, tpl.name||'exp') : new mdb.WasmRegister(n, tpl.name||'exp');
+          results.push({ type:'init', label:step.desc, data:`${useSparse?'Sparse':'Standard'} register: ${n} qubits, dim=2^${n}=${1<<n}`, time:performance.now()-t0 });
+          break;
+        case 'gate':
+          if (!reg) throw new Error('No register');
+          ({H:()=>reg.hadamard(step.target||0), X:()=>reg.pauliX(step.target||0), Y:()=>reg.pauliY(step.target||0), Z:()=>reg.pauliZ(step.target||0), S:()=>reg.sGate(step.target||0), T:()=>reg.tGate(step.target||0)}[(step.gate||'').toUpperCase()] || (()=>{throw new Error('Unknown gate: '+step.gate)}))();
+          results.push({ type:'gate', label:step.desc, data:`Applied ${step.gate}(${step.target||0})`, time:performance.now()-t0 });
+          break;
+        case 'gate_sequence':
+          if (!reg) throw new Error('No register');
+          elRunGateSequence(reg, n, step);
+          results.push({ type:'gate_sequence', label:step.desc, data:elGateSeqInfo(step, n), time:performance.now()-t0 });
+          break;
+        case 'peek':
+          if (!reg) throw new Error('No register');
+          results.push({ type:'peek', label:step.desc+' 👁 (non-destructive)', data:reg.peek(), time:performance.now()-t0 });
+          break;
+        case 'fork':
+          if (!reg) throw new Error('No register');
+          forkReg = reg.fork();
+          results.push({ type:'fork', label:step.desc+' 🔀', data:`Fork created. No-cloning theorem bypassed (MDB advantage).${useSparse&&reg.memoryBytes?' Memory: '+reg.memoryBytes()+'B':''}`, time:performance.now()-t0 });
+          break;
+        case 'fidelity':
+          if (!reg || !forkReg) throw new Error('Need register + fork');
+          const f = reg.fidelity(forkReg);
+          results.push({ type:'fidelity', label:step.desc, data:`Echo fidelity: ${f.toFixed(6)}\nPerturbation spread: ${(1-f).toFixed(6)}\n\nFidelity = 1.0 → perfect echo (no scrambling)\nFidelity → 0 → perturbation spread across all qubits`, time:performance.now()-t0 });
+          break;
+        case 'peek_fork':
+          if (!forkReg) throw new Error('No fork');
+          results.push({ type:'peek_fork', label:step.desc+' 👁🔀', data:forkReg.peek(), time:performance.now()-t0 });
+          break;
+        case 'measure':
+          if (!reg) throw new Error('No register');
+          results.push({ type:'measure', label:step.desc, data:reg.measureAll(BigInt(Date.now())), time:performance.now()-t0 });
+          break;
+        case 'builtin':
+          results.push({ type:'builtin', label:step.desc, data:elRunBuiltin(step), time:performance.now()-t0 });
+          break;
+        case 'compare':
+          results.push({ type:'compare', label:step.desc, data:`Classical: ~${step.classical_ops} ops\nQuantum (MDB): ~${step.quantum_ops} ops\nSpeedup: ${(step.classical_ops/step.quantum_ops).toFixed(1)}x`, time:performance.now()-t0 });
+          break;
+        default:
+          results.push({ type:step.type, label:step.desc||'Unknown', data:JSON.stringify(step) });
+      }
+    } catch(e) { results.push({ type:step.type, label:step.desc||'Error', error:e.message, time:performance.now()-t0 }); }
+  }
+  try { if (reg?.free) reg.free(); } catch(e) {}
+  try { if (forkReg?.free) forkReg.free(); } catch(e) {}
+  return results;
+}
+
+function elRunGateSequence(reg, n, step) {
+  const p = step.params || {};
+  switch(step.gates) {
+    case 'FORWARD_EVOLVE': case 'REVERSE_EVOLVE': {
+      const layers = p.layers||4, J = p.coupling||0.5;
+      for (let l = 0; l < layers; l++) for (let i = 0; i < n; i++) {
+        reg.rz(i, J*(l+1)*0.3); reg.rx(i, J*0.5);
+        if (i < n-1) { reg.cnot(i, i+1); reg.rz(i+1, J*0.7); reg.cnot(i, i+1); }
+      }
+      break;
+    }
+    case 'J_COUPLING': case 'J_COUPLING_REV': {
+      for (const [k,v] of Object.entries(p)) {
+        const m = k.match(/J(\d)(\d)/);
+        if (m) { const [i,j] = [parseInt(m[1])-1, parseInt(m[2])-1];
+          if (i < n && j < n) { reg.cnot(i,j); reg.rz(j, v*0.01); reg.cnot(i,j); } }
+      }
+      break;
+    }
+    case 'CNOT_CASCADE': for (let i = 0; i < n-1; i++) reg.cnot(i, i+1); break;
+    case 'H_ALL': for (let i = 0; i < n; i++) reg.hadamard(i); break;
+    case 'QFT': { const pos = new Uint32Array(n); for (let i=0;i<n;i++) pos[i]=i; reg.qft(pos); break; }
+  }
+}
+
+function elGateSeqInfo(step, n) {
+  const p = step.params||{};
+  if (step.gates==='FORWARD_EVOLVE'||step.gates==='REVERSE_EVOLVE') return `${p.layers||4} layers × ${n} qubits, J=${p.coupling||0.5}`;
+  if (step.gates==='CNOT_CASCADE') return `CNOT 0→1→...→${n-1}`;
+  if (step.gates==='H_ALL') return `H⊗${n}`;
+  if (step.gates==='QFT') return `QFT on 0..${n-1}`;
+  return step.gates;
+}
+
+function elRunBuiltin(step) {
+  switch(step.algorithm) {
+    case 'grover': return mdb.grover(step.params.n_qubits||4, step.params.target||0);
+    case 'shor': return mdb.shor(BigInt(step.params.N||35));
+    case 'shor_batch': {
+      let out = '';
+      for (const num of (step.params.numbers||[15,21,35])) {
+        const t0 = performance.now();
+        try { out += `${num} → ${mdb.shor(BigInt(num))} (${(performance.now()-t0).toFixed(2)}ms)\n`; }
+        catch(e) { out += `${num} → ERROR: ${e.message}\n`; }
+      }
+      return out;
+    }
+    case 'teleport': return mdb.teleport(step.params.alpha_re||0.6, 0, step.params.beta_re||0.8, 0, BigInt(Date.now()));
+    case 'deutschJozsa': return mdb.deutschJozsa(step.params.n_qubits||4);
+    default: throw new Error('Unknown algorithm: ' + step.algorithm);
+  }
+}
+
+function elEditTemplate(winId) {
+  const tpl = elCurrentTemplate[winId], tplEl = document.getElementById('EL_TPL-' + winId);
+  if (!tpl || !tplEl) return;
+  tplEl.innerHTML = `<div style="margin-bottom:8px;font-size:11px;color:var(--text-dim);">Edit template JSON. Click Apply when done.</div>
+    <textarea id="el-tpl-edit-${winId}" style="width:100%;min-height:300px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:11px;padding:10px;border-radius:var(--radius);resize:vertical;outline:none;box-sizing:border-box;">${escapeHtml(JSON.stringify(tpl,null,2))}</textarea>
+    <div style="margin-top:8px;display:flex;gap:6px;"><button class="btn btn-primary btn-sm" onclick="elApplyEdit('${winId}')">✅ Apply</button><button class="btn btn-secondary btn-sm" onclick="elRenderTemplate('${winId}')">Cancel</button></div>`;
+}
+
+function elApplyEdit(winId) {
+  const ta = document.getElementById('el-tpl-edit-' + winId);
+  try { elCurrentTemplate[winId] = JSON.parse(ta.value); elRenderTemplate(winId); } catch(e) { alert('Invalid JSON: ' + e.message); }
+}
+
+function elExportTemplate(btn) {
+  const winId = elWinId(btn), tpl = elCurrentTemplate[winId];
+  if (!tpl) return;
+  const blob = new Blob([JSON.stringify(tpl, null, 2)], { type:'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `mdb_experiment_${Date.now()}.json`;
-  a.click();
-  URL.revokeObjectURL(a.href);
+  a.download = (tpl.name||'experiment').replace(/[^a-z0-9]/gi,'_') + '.mdb-experiment.json';
+  a.click(); URL.revokeObjectURL(a.href);
 }
 
-// ── Problem 6: MDB Capabilities Demo ────────────────────────────────
-// Proves MDB does three things impossible on quantum hardware:
-// 1. peek() — non-destructive full state readout
-// 2. fork() — state cloning (violates no-cloning theorem)
-// 3. deterministic replay — same seed → bit-identical output
-function runMdbCapabilitiesDemo(btn) {
-  const win = btn.closest('.window');
-  const winId = win.dataset.winId || win.id;
-  const statusEl = document.getElementById(`EXP_STATUS-${winId}`);
-  const resultsEl = document.getElementById(`EXP_RESULTS-${winId}`);
-  const seed = parseInt(document.getElementById(`EXP_SEED-${winId}`).value) || 42;
-
-  statusEl.className = 'badge badge-amber';
-  statusEl.textContent = 'Running demo...';
-  btn.disabled = true;
-
-  setTimeout(() => {
-    try {
-      const t0 = performance.now();
-      const log = [];
-
-      // ═══ TEST 1: PEEK — Non-destructive state readout ═══
-      log.push('═══ TEST 1: PEEK (non-destructive readout) ═══');
-      log.push('On quantum hardware: measurement collapses the state. You cannot');
-      log.push('read amplitudes without destroying them. MDB can.\n');
-
-      const sb = new mdb.WasmSuperBit([1, 0, 1, 1, 0]);
-      const peek1 = sb.peek();
-      log.push('Created SuperBit from [1,0,1,1,0]');
-      log.push('peek() #1: ' + peek1.substring(0, 200) + '...');
-
-      // Peek again — state should be identical
-      const peek2 = sb.peek();
-      const peekMatch = peek1 === peek2;
-      log.push('peek() #2: ' + (peekMatch ? 'IDENTICAL to #1 ✓' : 'DIFFERENT from #1 ✗'));
-      log.push(`\nVerdict: peek() is non-destructive: ${peekMatch ? 'PROVEN ✓' : 'FAILED ✗'}`);
-      log.push('On a quantum computer, the second readout would give a random');
-      log.push('collapsed result, not the full amplitude distribution.\n');
-
-      // Also test with WasmRegister
-      log.push('── Register peek test ──');
-      const reg = new mdb.WasmRegister(3, 'peek_test');
-      reg.hadamard(0);
-      reg.cnot(0, 1);
-      const regPeek1 = reg.peek();
-      const regPeek2 = reg.peek();
-      const regPeekMatch = regPeek1 === regPeek2;
-      log.push('Created 3-position Bell-like register, applied H(0) → CNOT(0,1)');
-      log.push(`peek() called twice: ${regPeekMatch ? 'IDENTICAL ✓' : 'DIFFERENT ✗'}`);
-      log.push(`State after two peeks: ${regPeek1.substring(0, 150)}...`);
-      log.push('');
-
-      // ═══ TEST 2: FORK — State cloning ═══
-      log.push('═══ TEST 2: FORK (state cloning — violates no-cloning theorem) ═══');
-      log.push('Quantum no-cloning theorem: it is physically impossible to create');
-      log.push('an identical copy of an arbitrary unknown quantum state. MDB can.\n');
-
-      const original = new mdb.WasmSuperBit([1, 1, 0, 1]);
-      original.addState([0, 1, 1, 0], 'alt_state', 0.5);
-      const forked = original.fork();
-
-      const origPeek = original.peek();
-      const forkPeek = forked.peek();
-      const forkMatch = origPeek === forkPeek;
-      log.push('Created SuperBit with 2 states, then fork()ed it');
-      log.push(`Original states: ${original.stateCount()}`);
-      log.push(`Forked states:   ${forked.stateCount()}`);
-      log.push(`States identical: ${forkMatch ? 'YES ✓' : 'NO ✗'}`);
-
-      // Modify forked copy — original should be unchanged
-      forked.addState([1, 1, 1, 1], 'new_state', 0.3);
-      const origAfter = original.peek();
-      const forkAfter = forked.peek();
-      const origUnchanged = origPeek === origAfter;
-      log.push(`\nAdded new state to FORK only:`);
-      log.push(`Original states after: ${original.stateCount()} (was ${JSON.parse(origPeek).states.length})`);
-      log.push(`Forked states after:   ${forked.stateCount()}`);
-      log.push(`Original unchanged:    ${origUnchanged ? 'YES ✓' : 'NO ✗'}`);
-      log.push(`\nVerdict: fork() produces independent deep copy: ${forkMatch && origUnchanged ? 'PROVEN ✓' : 'FAILED ✗'}`);
-      log.push('On a quantum computer, this is provably impossible for arbitrary states.\n');
-
-      // Register fork test
-      log.push('── Register fork test ──');
-      const regOrig = new mdb.WasmRegister(3, 'fork_test');
-      regOrig.hadamard(0);
-      regOrig.cnot(0, 1);
-      const regForked = regOrig.fork();
-      // Apply different gate to fork
-      regForked.pauliX(2);
-      const origState = regOrig.peek();
-      const forkState = regForked.peek();
-      const regForkDiverged = origState !== forkState;
-      log.push('Created Bell pair, forked, applied X(2) to fork only');
-      log.push(`States diverged: ${regForkDiverged ? 'YES ✓ (independent copies)' : 'NO ✗ (shared state!)'}`);
-      log.push(`Fidelity between original and fork: ${regOrig.fidelity(regForked).toFixed(6)}`);
-      log.push('');
-
-      // ═══ TEST 3: DETERMINISTIC REPLAY ═══
-      log.push('═══ TEST 3: DETERMINISTIC REPLAY (seeded PRNG → identical results) ═══');
-      log.push('Quantum mechanics is fundamentally probabilistic. Even with identical');
-      log.push('preparation, measurements give different results each time.');
-      log.push('MDB uses seeded PRNG: same seed → same result, always.\n');
-
-      // Run Grover twice with same setup
-      const result1 = mdb.grover(5, 13);
-      const result2 = mdb.grover(5, 13);
-      const groverMatch = result1 === result2;
-      log.push(`Grover search (5 positions, target=13):`);
-      log.push(`Run 1: ${result1}`);
-      log.push(`Run 2: ${result2}`);
-      log.push(`Identical: ${groverMatch ? 'YES ✓' : 'NO ✗'}`);
-
-      // Run Shor twice
-      const shor1 = mdb.shor(35);
-      const shor2 = mdb.shor(35);
-      const shorMatch = shor1 === shor2;
-      log.push(`\nShor factoring (N=35):`);
-      log.push(`Run 1: ${shor1}`);
-      log.push(`Run 2: ${shor2}`);
-      log.push(`Identical: ${shorMatch ? 'YES ✓' : 'NO ✗'}`);
-
-      // Sparse register fitness search replay
-      log.push(`\n── Sparse register search replay (seed=${seed}) ──`);
-      const rng1 = mdbRng(seed), rng2 = mdbRng(seed);
-      const reg1 = new SparseStateRegister(), reg2 = new SparseStateRegister();
-      const testFitness = (bits) => bits.reduce((s,b,i) => s + b * (i+1) * 0.3, 0) - bits.filter(b=>b).length * 0.1;
-      const nTest = 12;
-      for (let i = 0; i < 500; i++) {
-        const b1 = [], b2 = [];
-        for (let j = 0; j < nTest; j++) { b1.push(rng1() < 0.5 ? 1 : 0); b2.push(rng2() < 0.5 ? 1 : 0); }
-        const f1 = testFitness(b1), f2 = testFitness(b2);
-        reg1.set(bitsToKey(b1), {bits:b1, fitness:f1});
-        reg2.set(bitsToKey(b2), {bits:b2, fitness:f2});
-      }
-      mdbVariationalSearch(reg1, testFitness, 'maximize', mdbRng(seed+1000), 6, 0.15, 0.6);
-      mdbVariationalSearch(reg2, testFitness, 'maximize', mdbRng(seed+1000), 6, 0.15, 0.6);
-      const best1 = reg1.sorted('maximize')[0];
-      const best2 = reg2.sorted('maximize')[0];
-      const searchMatch = best1.fitness === best2.fitness && best1.bits.join('') === best2.bits.join('');
-      log.push(`Search 1 best: [${best1.bits.join('')}] fitness=${best1.fitness.toFixed(6)}`);
-      log.push(`Search 2 best: [${best2.bits.join('')}] fitness=${best2.fitness.toFixed(6)}`);
-      log.push(`Identical: ${searchMatch ? 'YES ✓' : 'NO ✗'}`);
-
-      log.push(`\nVerdict: Deterministic replay: ${groverMatch && shorMatch && searchMatch ? 'PROVEN ✓' : 'PARTIAL'}`);
-      log.push('On a quantum computer, repeated measurements of identically-prepared');
-      log.push('states give statistically distributed results, never identical.\n');
-
-      // ═══ SUMMARY ═══
-      const elapsed = performance.now() - t0;
-      const allPass = peekMatch && regPeekMatch && forkMatch && origUnchanged && regForkDiverged && groverMatch && shorMatch && searchMatch;
-
-      log.push('═══════════════════════════════════════════════════════════════');
-      log.push(`SUMMARY: ${allPass ? 'ALL TESTS PASSED ✓' : 'SOME TESTS FAILED'}`);
-      log.push('═══════════════════════════════════════════════════════════════');
-      log.push(`peek()               — non-destructive readout:     ${peekMatch && regPeekMatch ? 'PASS ✓' : 'FAIL ✗'}`);
-      log.push(`fork()               — state cloning:               ${forkMatch && origUnchanged && regForkDiverged ? 'PASS ✓' : 'FAIL ✗'}`);
-      log.push(`deterministic replay — seeded reproducibility:      ${groverMatch && shorMatch && searchMatch ? 'PASS ✓' : 'FAIL ✗'}`);
-      log.push(`\nThese three capabilities are provably impossible on quantum hardware.`);
-      log.push(`MDB provides them while producing quantum-equivalent measurement statistics.`);
-      log.push(`This is what makes MDB strictly more capable, not merely equivalent.`);
-      log.push(`\nElapsed: ${elapsed.toFixed(1)} ms`);
-
-      statusEl.className = 'badge badge-green';
-      statusEl.textContent = allPass ? 'All Tests Passed ✓' : 'Issues Found';
-
-      resultsEl.innerHTML = `
-        <div class="result-card">
-          <h4>🔬 MDB Capabilities Proof — Three Things Quantum Hardware Cannot Do</h4>
-          <div style="margin-bottom:12px;">
-            <span class="metric"><span class="val">${peekMatch && regPeekMatch ? '✓' : '✗'}</span> <span class="unit">peek()</span></span>
-            <span class="metric"><span class="val">${forkMatch && origUnchanged ? '✓' : '✗'}</span> <span class="unit">fork()</span></span>
-            <span class="metric"><span class="val">${groverMatch && shorMatch && searchMatch ? '✓' : '✗'}</span> <span class="unit">replay</span></span>
-            <span class="metric"><span class="val">${elapsed.toFixed(1)}</span> <span class="unit">ms</span></span>
-          </div>
-          <pre style="white-space:pre-wrap;font-size:12px;line-height:1.5;">${log.join('\n')}</pre>
-        </div>
-      `;
-    } catch(e) {
-      statusEl.className = 'badge badge-red';
-      statusEl.textContent = 'Error';
-      resultsEl.innerHTML = `<div class="result-card"><h4 style="color:var(--red)">⚠ Demo Failed</h4><pre style="color:var(--red)">${e.message}\n\n${e.stack || ''}</pre></div>`;
-    }
-    btn.disabled = false;
-  }, 100);
+function elImportTemplate(btn) {
+  const winId = elWinId(btn), input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json';
+  input.onchange = e => {
+    const reader = new FileReader();
+    reader.onload = ev => { try { elCurrentTemplate[winId] = JSON.parse(ev.target.result); elRenderTemplate(winId); } catch(err) { alert('Invalid template: ' + err.message); } };
+    reader.readAsText(e.target.files[0]);
+  };
+  input.click();
 }
 
-function clearExperimentResults(btn) {
-  const win = btn.closest('.window');
-  const winId = win.dataset.winId || win.id;
-  document.getElementById(`EXP_RESULTS-${winId}`).innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text-muted);"><div style="font-size:48px;margin-bottom:16px;">🔬</div><p>Results cleared. Configure and run a new experiment.</p></div>';
-  document.getElementById(`EXP_STATUS-${winId}`).className = 'badge badge-blue';
-  document.getElementById(`EXP_STATUS-${winId}`).textContent = 'Ready';
+function elSaveTemplate(winId) {
+  const tpl = elCurrentTemplate[winId]; if (!tpl) return;
+  tpl.id = tpl.id || Date.now(); tpl.saved = new Date().toISOString();
+  try {
+    const saved = JSON.parse(localStorage.getItem('mdb-experiments')||'[]');
+    const idx = saved.findIndex(s => s.id === tpl.id);
+    if (idx >= 0) saved[idx] = tpl; else saved.push(tpl);
+    localStorage.setItem('mdb-experiments', JSON.stringify(saved));
+    elLoadLibrary(winId);
+  } catch(e) {}
 }
+
+function elLoadLibrary(winId) {
+  const sel = document.getElementById('EL_LIB-' + winId); if (!sel) return;
+  try {
+    const saved = JSON.parse(localStorage.getItem('mdb-experiments')||'[]');
+    sel.innerHTML = '<option value="">— ' + saved.length + ' saved —</option>';
+    for (const s of saved) sel.innerHTML += `<option value="${s.id}">${escapeHtml(s.name)} (${new Date(s.saved).toLocaleDateString()})</option>`;
+  } catch(e) {}
+}
+
+function elLoadSaved(sel) {
+  const winId = elWinId(sel), id = parseInt(sel.value); if (!id) return;
+  try {
+    const tpl = JSON.parse(localStorage.getItem('mdb-experiments')||'[]').find(s => s.id === id);
+    if (tpl) { elCurrentTemplate[winId] = tpl; elRenderTemplate(winId); }
+  } catch(e) {}
+}
+
+function elExportAs(winId, fmt) {
+  const resultsEl = document.getElementById('EL_RESULTS-' + winId);
+  if (!resultsEl?._lastResults) return;
+  const tpl = elCurrentTemplate[winId], results = resultsEl._lastResults;
+  const safeName = (tpl?.name||'experiment').replace(/[^a-z0-9]/gi,'_'), ts = new Date().toISOString();
+  let content, mime, ext;
+  if (fmt === 'json') {
+    content = JSON.stringify({ experiment:tpl, results, exported:ts, engine:'MDB-OS v0.3.1' }, null, 2);
+    mime = 'application/json'; ext = 'json';
+  } else if (fmt === 'csv') {
+    const rows = ['Step,Type,Label,Time_ms,Data'];
+    results.forEach((r,i) => {
+      const d = (r.data||r.error||'').toString().replace(/"/g,'""').replace(/\n/g,' ');
+      rows.push([i+1, r.type||'', '"'+(r.label||'').replace(/"/g,'""')+'"', (r.time||0).toFixed(3), '"'+d+'"'].join(','));
+    });
+    content = `# MDB-OS Experiment Export\n# ${tpl?.name||'N/A'} | ${tpl?.qubits||'?'}q | ${ts}\n# Opens in Excel, Sheets, R, MATLAB, pandas\n\n` + rows.join('\n');
+    mime = 'text/csv'; ext = 'csv';
+  } else if (fmt === 'md') {
+    let md = `# ${tpl?.name||'Results'}\n\n**Engine:** MDB-OS v0.3.1 | **Qubits:** ${tpl?.qubits||'?'} | **Register:** ${tpl?.register_type||'standard'} | **Exported:** ${ts}\n\n`;
+    md += `## Description\n\n${tpl?.description||'N/A'}\n\n`;
+    if (tpl?.observables) md += `**Observables:** ${tpl.observables.join(', ')}\n\n`;
+    md += `## Results\n\n| # | Type | Description | Time |\n|---|------|-------------|------:|\n`;
+    results.forEach((r,i) => md += `| ${i+1} | ${r.type||''} | ${(r.label||'').replace(/\|/g,'\\|')} | ${(r.time||0).toFixed(2)}ms |\n`);
+    md += `\n## Details\n\n`;
+    results.forEach((r,i) => { md += `### Step ${i+1}: ${r.label||''}\n\n`; if (r.data) md += '```\n'+r.data.toString().substring(0,3000)+'\n```\n\n'; if (r.error) md += `**Error:** ${r.error}\n\n`; });
+    content = md; mime = 'text/markdown'; ext = 'md';
+  } else {
+    let txt = `MDB-OS Experiment Results\n${'='.repeat(60)}\n${tpl?.name||'N/A'} | ${tpl?.qubits||'?'}q | ${ts}\n\n`;
+    txt += `${tpl?.description||''}\n\n${'─'.repeat(60)}\n\n`;
+    results.forEach((r,i) => { txt += `[Step ${i+1}] ${r.label||''}${r.time?' ('+r.time.toFixed(2)+'ms)':''}\n`; if (r.data) txt += r.data.toString().substring(0,3000)+'\n'; if (r.error) txt += 'ERROR: '+r.error+'\n'; txt += '\n'; });
+    content = txt; mime = 'text/plain'; ext = 'txt';
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type:mime }));
+  a.download = safeName + '_results.' + ext;
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+function elCopyResults(winId) {
+  const el = document.getElementById('EL_RESULTS-' + winId);
+  if (!el?._lastResults) return;
+  navigator.clipboard.writeText(el._lastResults.map(r => `[${r.label}]\n${r.data||r.error||''}`).join('\n\n')).catch(()=>{});
+}
+
 
 // ═══════════════════════════════════════════════════════════════════
 // Circuit Designer App
@@ -2704,6 +2622,20 @@ function openSettings() {
           </div>
         </div>
         <div class="settings-section">
+          <h4>AI Integration</h4>
+          <div class="setting-row">
+            <div><div class="label">Gemini API Key</div><div class="sublabel">Free from <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--accent-glow);">aistudio.google.com/apikey</a> — no credit card needed</div></div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <input type="password" id="setting-gemini-key" value="${localStorage.getItem('mdb_gemini_key')||''}" placeholder="AIza..." style="width:180px;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:4px;font-size:11px;font-family:var(--mono);">
+              <button class="btn btn-sm btn-primary" onclick="localStorage.setItem('mdb_gemini_key',document.getElementById('setting-gemini-key').value);this.textContent='Saved ✓';setTimeout(()=>this.textContent='Save',1500);">Save</button>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div><div class="label">AI Status</div><div class="sublabel">Used by Experiment Lab to generate custom experiments from plain English</div></div>
+            <span class="badge ${localStorage.getItem('mdb_gemini_key') ? 'badge-green' : 'badge-red'}">${localStorage.getItem('mdb_gemini_key') ? 'Connected' : 'Not configured'}</span>
+          </div>
+        </div>
+        <div class="settings-section">
           <h4>About</h4>
           <div class="setting-row">
             <div><div class="label">MDB-OS Version</div></div>
@@ -2820,28 +2752,7 @@ fmLoadDir = async function(winId, path) {
   }
 };
 
-// Inject sidebar toggle button into experiment lab toolbar on mobile
-const origOpenExperimentLab = openExperimentLab;
-openExperimentLab = function() {
-  origOpenExperimentLab();
-  // Find the newly created experiment window and inject toggle
-  setTimeout(() => {
-    document.querySelectorAll('.lab-toolbar').forEach(toolbar => {
-      if (toolbar.querySelector('.lab-sidebar-toggle')) return;
-      const toggleBtn = document.createElement('button');
-      toggleBtn.className = 'lab-sidebar-toggle';
-      toggleBtn.innerHTML = '☰ Config';
-      toggleBtn.onclick = function() {
-        const sidebar = this.closest('.lab').querySelector('.lab-sidebar');
-        if (sidebar) {
-          sidebar.classList.toggle('mobile-open');
-          this.innerHTML = sidebar.classList.contains('mobile-open') ? '✕ Close' : '☰ Config';
-        }
-      };
-      toolbar.insertBefore(toggleBtn, toolbar.firstChild);
-    });
-  }, 100);
-};
+// Experiment Lab mobile handled by CSS flexbox responsive layout
 
 // Handle orientation changes: re-layout windows
 window.addEventListener('resize', () => {
@@ -2857,6 +2768,282 @@ window.addEventListener('resize', () => {
     });
   }
 });
+
+// ═══════════════════════════════════════════════════════════════════
+// Research Notepad — Persistent Notes
+// ═══════════════════════════════════════════════════════════════════
+
+function openResearchNotepad() {
+  createWindow({
+    title: 'Research Notepad', icon: '📝', appType: 'notepad',
+    width: 760, height: 500,
+    body: `
+      <div class="notepad">
+        <div class="notepad-toolbar">
+          <button class="btn btn-primary btn-sm" onclick="npNew(this)">+ New</button>
+          <button class="btn btn-secondary btn-sm" onclick="npSave(this)">💾 Save</button>
+          <button class="btn btn-secondary btn-sm" onclick="npDelete(this)">🗑️</button>
+          <span style="flex:1;"></span>
+          <button class="btn btn-secondary btn-sm" onclick="npExportAll(this)">📤 Export All (TXT)</button>
+          <button class="btn btn-secondary btn-sm" onclick="npExportMd(this)">📄 Export (Markdown)</button>
+        </div>
+        <div class="notepad-body">
+          <div class="notepad-list" id="__NP_LIST__"></div>
+          <div class="notepad-editor">
+            <input type="text" id="__NP_TITLE__" placeholder="Note title..." style="border:none;border-bottom:1px solid var(--border);background:var(--surface);color:var(--text);padding:10px 16px;font-size:14px;font-weight:600;font-family:var(--sans);outline:none;width:100%;box-sizing:border-box;">
+            <textarea id="__NP_CONTENT__" placeholder="Start writing your research notes...&#10;&#10;Tips:&#10;• Record experiment observations&#10;• Copy results from Experiment Lab&#10;• Notes auto-save to your browser&#10;• Export as TXT or Markdown"></textarea>
+            <div class="notepad-status"><span id="__NP_STATUS__">Ready</span><span id="__NP_COUNT__">0 notes</span></div>
+          </div>
+        </div>
+      </div>
+    `,
+    onInit: (winId, el) => {
+      ['NP_LIST','NP_TITLE','NP_CONTENT','NP_STATUS','NP_COUNT'].forEach(k => {
+        const e = el.querySelector(`[id="__${k}__"]`); if (e) e.id = k + '-' + winId;
+      });
+      npInit(winId);
+    }
+  });
+}
+
+const npNotes = {}, npCurrent = {};
+
+function npWin(el) { return el.closest('.window').dataset.winId || el.closest('.window').id; }
+
+function npInit(winId) {
+  try { npNotes[winId] = JSON.parse(localStorage.getItem('mdb-notes')||'[]'); } catch(e) { npNotes[winId] = []; }
+  if (!npNotes[winId].length) {
+    npNotes[winId] = [{ id:Date.now(), title:'Welcome', content:'Research Notepad — record experiment observations here.\n\n• Auto-saves to browser storage\n• Export all notes as TXT or Markdown\n• Copy results from Experiment Lab', created:new Date().toISOString(), modified:new Date().toISOString() }];
+    npPersist(winId);
+  }
+  npRenderList(winId);
+  if (npNotes[winId].length) npSelect(winId, npNotes[winId][0].id);
+}
+
+function npPersist(winId) { try { localStorage.setItem('mdb-notes', JSON.stringify(npNotes[winId])); } catch(e) {} }
+
+function npRenderList(winId) {
+  const list = document.getElementById('NP_LIST-'+winId), count = document.getElementById('NP_COUNT-'+winId);
+  if (!list) return;
+  list.innerHTML = (npNotes[winId]||[]).map(n =>
+    `<div class="notepad-list-item${npCurrent[winId]===n.id?' active':''}" onclick="npSelect('${winId}',${n.id})"><div class="title">${escapeHtml(n.title||'Untitled')}</div><div class="date">${new Date(n.modified).toLocaleDateString()}</div></div>`
+  ).join('');
+  if (count) count.textContent = (npNotes[winId]||[]).length + ' notes';
+}
+
+function npSelect(winId, id) {
+  npCurrent[winId] = id;
+  const note = (npNotes[winId]||[]).find(n => n.id === id);
+  if (!note) return;
+  const t = document.getElementById('NP_TITLE-'+winId), c = document.getElementById('NP_CONTENT-'+winId);
+  if (t) t.value = note.title||''; if (c) c.value = note.content||'';
+  npRenderList(winId);
+}
+
+function npNew(btn) {
+  const winId = npWin(btn);
+  const note = { id:Date.now(), title:'Note — '+new Date().toLocaleString(), content:'', created:new Date().toISOString(), modified:new Date().toISOString() };
+  (npNotes[winId]=npNotes[winId]||[]).unshift(note);
+  npSelect(winId, note.id); npPersist(winId);
+}
+
+function npSave(btn) {
+  const winId = npWin(btn);
+  const note = (npNotes[winId]||[]).find(n => n.id === npCurrent[winId]); if (!note) return;
+  note.title = document.getElementById('NP_TITLE-'+winId)?.value||'Untitled';
+  note.content = document.getElementById('NP_CONTENT-'+winId)?.value||'';
+  note.modified = new Date().toISOString();
+  npPersist(winId); npRenderList(winId);
+  const s = document.getElementById('NP_STATUS-'+winId);
+  if (s) { s.textContent = '✓ Saved'; setTimeout(() => s.textContent = 'Ready', 2000); }
+}
+
+function npDelete(btn) {
+  const winId = npWin(btn);
+  npNotes[winId] = (npNotes[winId]||[]).filter(n => n.id !== npCurrent[winId]);
+  npPersist(winId);
+  if (npNotes[winId].length) npSelect(winId, npNotes[winId][0].id);
+  else { const t = document.getElementById('NP_TITLE-'+winId), c = document.getElementById('NP_CONTENT-'+winId); if(t)t.value=''; if(c)c.value=''; }
+  npRenderList(winId);
+}
+
+function npExportAll(btn) {
+  const winId = npWin(btn), notes = npNotes[winId]||[];
+  let txt = 'MDB-OS Research Notes — ' + new Date().toISOString() + '\n' + '='.repeat(60) + '\n\n';
+  for (const n of notes) txt += `## ${n.title}\nCreated: ${n.created} | Modified: ${n.modified}\n\n${n.content}\n\n${'─'.repeat(40)}\n\n`;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([txt],{type:'text/plain'}));
+  a.download = 'mdb-research-notes.txt'; a.click();
+}
+
+function npExportMd(btn) {
+  const winId = npWin(btn), notes = npNotes[winId]||[];
+  let md = '# MDB-OS Research Notes\n\n*Exported: ' + new Date().toISOString() + '*\n\n---\n\n';
+  for (const n of notes) md += `## ${n.title}\n\n*Created: ${n.created} | Modified: ${n.modified}*\n\n${n.content}\n\n---\n\n`;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([md],{type:'text/markdown'}));
+  a.download = 'mdb-research-notes.md'; a.click();
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// System Monitor — Live MDB Resource & Complexity Tracking
+// ═══════════════════════════════════════════════════════════════════
+
+function openSystemMonitor() {
+  createWindow({
+    title: 'System Monitor', icon: '📊', appType: 'sysmon',
+    width: 820, height: 560,
+    body: `
+      <div class="sysmon">
+        <div class="sysmon-toolbar">
+          <button class="btn btn-primary btn-sm" id="__SM_TOGGLE__" onclick="smToggle(this)">▶ Start Live</button>
+          <button class="btn btn-secondary btn-sm" onclick="smBenchmark(this)">⚡ Benchmark</button>
+          <button class="btn btn-secondary btn-sm" onclick="smScaling(this)">📈 Scaling Analysis</button>
+          <button class="btn btn-secondary btn-sm" onclick="smExport(this)">📤 Export</button>
+        </div>
+        <div class="sysmon-grid">
+          <div class="sysmon-panel">
+            <h4>MDB Engine Status</h4>
+            <div id="__SM_ENGINE__" style="overflow-y:auto;flex:1;"></div>
+          </div>
+          <div class="sysmon-panel">
+            <h4>Sparse Memory Scaling</h4>
+            <canvas id="__SM_MEM__"></canvas>
+          </div>
+          <div class="sysmon-panel">
+            <h4>Performance</h4>
+            <div id="__SM_PERF__" style="overflow-y:auto;flex:1;"></div>
+          </div>
+          <div class="sysmon-panel">
+            <h4>Algorithm Benchmarks</h4>
+            <div id="__SM_LIMITS__" style="overflow-y:auto;flex:1;"></div>
+          </div>
+        </div>
+      </div>
+    `,
+    onInit: (winId, el) => {
+      ['SM_TOGGLE','SM_ENGINE','SM_MEM','SM_PERF','SM_LIMITS'].forEach(k => {
+        const e = el.querySelector(`[id="__${k}__"]`); if (e) e.id = k + '-' + winId;
+      });
+      smUpdateAll(winId);
+    }
+  });
+}
+
+const smIntervals = {};
+
+function smWin(el) { return el.closest('.window').dataset.winId || el.closest('.window').id; }
+
+function smToggle(btn) {
+  const winId = smWin(btn);
+  if (smIntervals[winId]) { clearInterval(smIntervals[winId]); smIntervals[winId]=null; btn.textContent='▶ Start Live'; }
+  else { btn.textContent='⏹ Stop'; smIntervals[winId] = setInterval(()=>smUpdateAll(winId), 2000); }
+}
+
+function smUpdateAll(winId) { smUpdateEngine(winId); smUpdateMemory(winId); smUpdateLimits(winId); }
+
+function smUpdateEngine(winId) {
+  const el = document.getElementById('SM_ENGINE-'+winId); if (!el) return;
+  let h = '';
+  try { h += `<div class="sysmon-stat"><span>Version</span><span class="val green">${mdb.version()}</span></div>`; } catch(e) { h += `<div class="sysmon-stat"><span>Version</span><span class="val">v0.3.x</span></div>`; }
+  h += `<div class="sysmon-stat"><span>WASM Engine</span><span class="val ${wasmReady?'green':'amber'}">${wasmReady?'Active':'Demo'}</span></div>`;
+  h += `<div class="sysmon-stat"><span>IndexedDB</span><span class="val ${db?'green':'amber'}">${db?'Connected':'N/A'}</span></div>`;
+  h += `<div class="sysmon-stat"><span>Windows</span><span class="val">${Object.keys(windows).length}</span></div>`;
+  h += `<div class="sysmon-stat"><span>Uptime</span><span class="val">${(performance.now()/1000).toFixed(0)}s</span></div>`;
+  try { const r=new mdb.WasmRegister(4,'probe'); r.hadamard(0); r.cnot(0,1); r.free(); h += `<div class="sysmon-stat"><span>Register</span><span class="val green">✓ OK</span></div>`; } catch(e) { h += `<div class="sysmon-stat"><span>Register</span><span class="val red">Error</span></div>`; }
+  try { const t0=performance.now(); mdb.grover(4,7); h += `<div class="sysmon-stat"><span>Grover(4,7)</span><span class="val green">${(performance.now()-t0).toFixed(2)}ms</span></div>`; } catch(e) {}
+  try { const sr=new mdb.WasmSparseRegister(8,'probe'); sr.hadamard(0); sr.cnot(0,1); h += `<div class="sysmon-stat"><span>Sparse Reg</span><span class="val green">✓ ${sr.population()} states / ${sr.memoryBytes()}B</span></div>`; sr.free(); } catch(e) {}
+  el.innerHTML = h;
+}
+
+function smUpdateMemory(winId) {
+  const canvas = document.getElementById('SM_MEM-'+winId); if (!canvas) return;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const dpr = window.devicePixelRatio||1;
+  canvas.width = (rect.width-28)*dpr; canvas.height = Math.max(80, rect.height-50)*dpr;
+  const ctx = canvas.getContext('2d'); ctx.scale(dpr, dpr);
+  const W = rect.width-28, H = Math.max(80, rect.height-50);
+  ctx.fillStyle = '#0a0a12'; ctx.fillRect(0, 0, W, H);
+  const sizes = [2,4,6,8,10,12,14,16,20,24];
+  const barW = (W-30)/sizes.length;
+  ctx.fillStyle = '#8888aa'; ctx.font = '9px monospace';
+  ctx.fillText('Memory = O(populated states), not O(2^n)', 4, 11);
+  for (let i = 0; i < sizes.length; i++) {
+    const n = sizes[i];
+    try {
+      const sr = new mdb.WasmSparseRegister(n, 'mem'); sr.hadamard(0); if (n>1) sr.cnot(0,1);
+      const pop = sr.population(), mem = sr.memoryBytes(); sr.free();
+      const barH = Math.max(4, Math.min(H-36, mem * 0.5));
+      const x = 15+i*barW, y = H-16-barH;
+      const grad = ctx.createLinearGradient(x,y,x,H-16);
+      grad.addColorStop(0,'#6366f1'); grad.addColorStop(1,'#4f46e5');
+      ctx.fillStyle = grad; ctx.fillRect(x+2, y, barW-4, barH);
+      ctx.fillStyle = '#8888aa'; ctx.font = '8px monospace'; ctx.textAlign = 'center';
+      ctx.fillText(`${n}q`, x+barW/2, H-4);
+      ctx.fillStyle = '#22c55e'; ctx.fillText(`${mem}B`, x+barW/2, y-3);
+    } catch(e) {}
+  }
+  ctx.textAlign = 'left';
+}
+
+function smUpdateLimits(winId) {
+  const el = document.getElementById('SM_LIMITS-'+winId); if (!el) return;
+  const tests = [
+    { name:'Grover 4q', fn:()=>mdb.grover(4,7) },
+    { name:'Grover 8q', fn:()=>mdb.grover(8,100) },
+    { name:'Grover 12q', fn:()=>mdb.grover(12,1000) },
+    { name:'Shor(15)', fn:()=>mdb.shor(BigInt(15)) },
+    { name:'Shor(91)', fn:()=>mdb.shor(BigInt(91)) },
+    { name:'D-J 4q', fn:()=>mdb.deutschJozsa(4) },
+    { name:'D-J 10q', fn:()=>mdb.deutschJozsa(10) },
+    { name:'D-J 16q', fn:()=>mdb.deutschJozsa(16) },
+  ];
+  let h = '';
+  for (const t of tests) {
+    const t0 = performance.now();
+    try { t.fn(); const dt = (performance.now()-t0).toFixed(3); const cls = parseFloat(dt)>100?'red':parseFloat(dt)>10?'amber':'green'; h += `<div class="sysmon-stat"><span>${t.name}</span><span class="val ${cls}">${dt}ms</span></div>`; }
+    catch(e) { h += `<div class="sysmon-stat"><span>${t.name}</span><span class="val red">FAIL</span></div>`; }
+  }
+  el.innerHTML = h;
+}
+
+function smBenchmark(btn) {
+  const winId = smWin(btn), el = document.getElementById('SM_PERF-'+winId); if (!el) return;
+  btn.disabled=true; btn.textContent='⏳...';
+  setTimeout(() => {
+    try { el.innerHTML = `<pre style="font-size:10px;white-space:pre-wrap;">${mdb.runBenchmarks()}</pre>`; }
+    catch(e) { el.innerHTML = `<div style="color:var(--red);font-size:11px;">${e.message}</div>`; }
+    btn.disabled=false; btn.textContent='⚡ Benchmark';
+  }, 50);
+}
+
+function smScaling(btn) {
+  const winId = smWin(btn), el = document.getElementById('SM_PERF-'+winId); if (!el) return;
+  let h = `<table style="width:100%;font-size:11px;font-family:var(--mono);border-collapse:collapse;">`;
+  h += `<tr style="border-bottom:1px solid var(--border);"><th style="padding:3px;text-align:left;">N</th><th style="padding:3px;text-align:right;">2^n</th><th style="padding:3px;text-align:right;">Grover</th><th style="padding:3px;text-align:right;">D-J</th></tr>`;
+  for (const n of [2,4,6,8,10,12,14,16,18,20]) {
+    let gt='-', dt='-';
+    try { const t0=performance.now(); mdb.grover(n,1); gt=(performance.now()-t0).toFixed(2); } catch(e) { gt='ERR'; }
+    try { const t0=performance.now(); mdb.deutschJozsa(n); dt=(performance.now()-t0).toFixed(2); } catch(e) { dt='ERR'; }
+    h += `<tr style="border-bottom:1px solid rgba(255,255,255,.04);"><td style="padding:3px;">${n}</td><td style="padding:3px;text-align:right;color:var(--text-dim);">${Math.pow(2,n).toLocaleString()}</td><td style="padding:3px;text-align:right;color:var(--green);">${gt}ms</td><td style="padding:3px;text-align:right;color:var(--cyan);">${dt}ms</td></tr>`;
+  }
+  h += `</table>`;
+  el.innerHTML = h;
+}
+
+function smExport(btn) {
+  const winId = smWin(btn);
+  const engine = document.getElementById('SM_ENGINE-'+winId)?.innerText || '';
+  const limits = document.getElementById('SM_LIMITS-'+winId)?.innerText || '';
+  const perf = document.getElementById('SM_PERF-'+winId)?.innerText || '';
+  let txt = `MDB-OS System Report — ${new Date().toISOString()}\n${'='.repeat(60)}\n\n`;
+  txt += `ENGINE STATUS\n${engine}\n\nALGORITHM BENCHMARKS\n${limits}\n\nPERFORMANCE\n${perf}\n`;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([txt],{type:'text/plain'}));
+  a.download = 'mdb-system-report.txt'; a.click();
+}
+
 
 // ═══════════════════════════════════════════════════════════════════
 // Boot

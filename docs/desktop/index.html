@@ -26,7 +26,7 @@
   --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 13px; -webkit-font-smoothing: antialiased; user-select: none; }
+html, body { width: 100%; height: 100%; height: 100dvh; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 13px; -webkit-font-smoothing: antialiased; user-select: none; }
 
 /* ── Desktop ─────────────────────────────────────────────────────── */
 #desktop {
@@ -295,18 +295,23 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg);
 @media (max-width: 768px) {
   :root { --taskbar-h: 52px; --titlebar-h: 38px; }
 
+  /* Taskbar: fixed to bottom on mobile so browser chrome can't hide it */
+  #taskbar { position: fixed; bottom: 0; left: 0; right: 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  #desktop { bottom: var(--taskbar-h); }
+
   /* Windows: fill the screen on mobile */
   .window {
     min-width: 100% !important; min-height: 200px !important;
     left: 0 !important; top: 0 !important;
-    width: 100% !important; height: calc(100vh - var(--taskbar-h)) !important;
+    width: 100% !important; height: calc(100dvh - var(--taskbar-h)) !important;
     border-radius: 0 !important;
   }
   .window .resize-handle { display: none; }
   .window-titlebar { height: var(--titlebar-h); min-height: var(--titlebar-h); padding: 0 6px; cursor: default !important; }
   .window-titlebar .title { font-size: 13px; }
   .window-btn { width: 32px; height: 32px; font-size: 16px; }
-  .window-btn.minimize, .window-btn.maximize { display: none; }
+  .window-btn.maximize { display: none; }
+  .window-btn.minimize { display: flex; }
 
   /* Desktop icons: grid layout, single-tap */
   #desktop-icons {
@@ -1671,6 +1676,7 @@ function openExperimentLab() {
             <option value="custom">🛠️ Custom (describe your experiment)</option>
           </select>
           <button class="btn btn-primary btn-sm" onclick="elGenerate(this)">🧠 Generate Template</button>
+          <span style="font-size:9px;padding:2px 6px;border-radius:8px;background:${localStorage.getItem('mdb_gemini_key')?'rgba(34,197,94,.15)':'rgba(255,255,255,.06)'};color:${localStorage.getItem('mdb_gemini_key')?'var(--green)':'var(--text-dim)'};">${localStorage.getItem('mdb_gemini_key')?'🤖 AI Connected':'⚙️ AI: add key in Settings'}</span>
           <button class="btn btn-secondary btn-sm" onclick="elRunTemplate(this)">▶ Run</button>
           <button class="btn btn-secondary btn-sm" onclick="elExportTemplate(this)">📤 Export Template</button>
           <button class="btn btn-secondary btn-sm" onclick="elImportTemplate(this)">📥 Import</button>
@@ -1787,21 +1793,96 @@ function elRenderTemplate(winId) {
   tplEl.innerHTML = h;
 }
 
-function elGenerate(btn) {
+async function elGenerate(btn) {
   const winId = elWinId(btn);
   const prompt = document.getElementById('EL_PROMPT-' + winId)?.value || '';
   const dataStr = document.getElementById('EL_DATA-' + winId)?.value || '';
   const presetKey = document.getElementById('EL_PRESET-' + winId)?.value || 'custom';
+  const tplEl = document.getElementById('EL_TPL-' + winId);
 
   if (presetKey !== 'custom' && EXPLAB_PRESETS[presetKey]?.template) {
     const tpl = JSON.parse(JSON.stringify(EXPLAB_PRESETS[presetKey].template));
     const data = elParseData(dataStr);
     if (data) { tpl.data_points = { ...(tpl.data_points||{}), ...data }; if (data.qubits) tpl.qubits = data.qubits; }
     elCurrentTemplate[winId] = tpl;
-  } else {
-    elCurrentTemplate[winId] = elBuildCustomTemplate(prompt, dataStr);
+    elRenderTemplate(winId);
+    return;
   }
+
+  // Custom experiment — try AI first, fallback to pattern matching
+  const geminiKey = localStorage.getItem('mdb_gemini_key');
+  if (geminiKey && prompt.trim()) {
+    if (tplEl) tplEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--accent-glow);"><div style="font-size:24px;margin-bottom:10px;">🧠</div><div>AI is designing your experiment...</div></div>';
+    try {
+      const tpl = await elAIGenerate(prompt, dataStr, geminiKey);
+      elCurrentTemplate[winId] = tpl;
+      elRenderTemplate(winId);
+      return;
+    } catch(e) {
+      console.warn('AI generation failed, using pattern matching:', e);
+      if (tplEl) tplEl.innerHTML = `<div style="padding:12px;color:var(--amber);font-size:11px;">⚠️ AI unavailable (${escapeHtml(e.message||'error')}), using built-in template builder...</div>`;
+      await new Promise(r => setTimeout(r, 1200));
+    }
+  }
+  elCurrentTemplate[winId] = elBuildCustomTemplate(prompt, dataStr);
   elRenderTemplate(winId);
+}
+
+async function elAIGenerate(prompt, dataStr, apiKey) {
+  const systemPrompt = `You are an MDB-OS experiment designer. Given a research question, produce a JSON experiment template.
+
+The template must follow this exact schema:
+{
+  "name": "short experiment name",
+  "description": "what this experiment does and why",
+  "qubits": <number 2-64>,
+  "register_type": "standard" or "sparse",
+  "steps": [
+    { "type": "init", "desc": "description" },
+    { "type": "gate", "desc": "description", "gate": "H|X|Y|Z|CNOT|CZ|SWAP|T|S|RX|RY|RZ", "target": <qubit_index> },
+    { "type": "gate_sequence", "desc": "description", "gates": "FORWARD_EVOLVE|REVERSE_EVOLVE|J_COUPLING|CNOT_CASCADE|H_ALL|QFT", "params": {...} },
+    { "type": "peek", "desc": "inspect state without collapse (MDB exclusive)" },
+    { "type": "fork", "desc": "clone quantum state for comparison (MDB exclusive)" },
+    { "type": "fidelity", "desc": "compare forked states" },
+    { "type": "measure", "desc": "destructive measurement" },
+    { "type": "builtin", "desc": "description", "algorithm": "grover|shor|teleport|deutsch_jozsa", "params": {...} }
+  ],
+  "observables": ["list","of","measurements"],
+  "data_points": { optional user data },
+  "export_format": "json"
+}
+
+MDB advantages to leverage:
+- peek(): non-destructive state inspection (impossible on real quantum hardware)
+- fork(): clone quantum states (violates no-cloning theorem, MDB can do it)
+- sparse register: memory scales with populated states, not 2^n
+- deterministic: same input = same output every time
+
+Respond with ONLY the JSON template, no markdown, no explanation.`;
+
+  const userMsg = `Research question: ${prompt}${dataStr ? '\\nAdditional data: ' + dataStr : ''}`;
+
+  const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      system_instruction: { parts: [{ text: systemPrompt }] },
+      contents: [{ parts: [{ text: userMsg }] }],
+      generationConfig: { temperature: 0.3, maxOutputTokens: 2048 }
+    })
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.error?.message || 'API error ' + resp.status);
+  }
+  const json = await resp.json();
+  const text = json.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  // Extract JSON from the response (handle markdown code blocks)
+  const cleaned = text.replace(/^```json?\s*\n?/,'').replace(/\n?```\s*$/,'').trim();
+  const tpl = JSON.parse(cleaned);
+  // Validate minimum structure
+  if (!tpl.name || !tpl.steps || !Array.isArray(tpl.steps)) throw new Error('Invalid template structure');
+  return tpl;
 }
 
 function elParseData(str) {
@@ -2538,6 +2619,20 @@ function openSettings() {
           <div class="setting-row">
             <div><div class="label">Clear All Data</div><div class="sublabel">Remove all saved files and experiments</div></div>
             <button class="btn btn-sm btn-danger" onclick="if(confirm('Delete all saved data?')){indexedDB.deleteDatabase('${DB_NAME}');location.reload();}">Clear</button>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h4>AI Integration</h4>
+          <div class="setting-row">
+            <div><div class="label">Gemini API Key</div><div class="sublabel">Free from <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--accent-glow);">aistudio.google.com/apikey</a> — no credit card needed</div></div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <input type="password" id="setting-gemini-key" value="${localStorage.getItem('mdb_gemini_key')||''}" placeholder="AIza..." style="width:180px;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:4px;font-size:11px;font-family:var(--mono);">
+              <button class="btn btn-sm btn-primary" onclick="localStorage.setItem('mdb_gemini_key',document.getElementById('setting-gemini-key').value);this.textContent='Saved ✓';setTimeout(()=>this.textContent='Save',1500);">Save</button>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div><div class="label">AI Status</div><div class="sublabel">Used by Experiment Lab to generate custom experiments from plain English</div></div>
+            <span class="badge ${localStorage.getItem('mdb_gemini_key') ? 'badge-green' : 'badge-red'}">${localStorage.getItem('mdb_gemini_key') ? 'Connected' : 'Not configured'}</span>
           </div>
         </div>
         <div class="settings-section">
