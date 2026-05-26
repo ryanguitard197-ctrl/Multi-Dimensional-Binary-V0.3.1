@@ -10,13 +10,13 @@
 
 **A computational framework that replaces exponential memory scaling with sparse state representation. 64 positions. 2 states. 168 bytes.**
 
-> *What quantum computing promised but couldn't deliver — running on commodity hardware.*
+> *A distinct approach to representing and manipulating superposition-like states — running on commodity hardware.*
 
 ---
 
 ## The Problem
 
-Every quantum simulator stores **2ⁿ complex amplitudes**. For 64 positions, that's **295 exabytes** — more memory than exists on Earth. This hard limit has been treated as an unavoidable law of physics.
+Every quantum simulator stores **2ⁿ complex amplitudes**. For 64 positions, that's **295 exabytes** — more memory than exists on Earth. This hard limit has been treated as an unavoidable constraint of the simulation approach.
 
 ## The Solution
 
@@ -24,7 +24,7 @@ MDB-OS introduces the **Sparse Register** — a `HashMap<u64, Complex>` that sto
 
 | | Quantum Hardware | Classical Simulator | **MDB-OS** |
 |---|---|---|---|
-| Memory at 64 positions | Physical hardware | 295 exabytes | **168 bytes** |
+| Memory at 64 positions | Physical hardware | 295 exabytes | **168 bytes** (sparse circuits) |
 | Non-destructive readout | Impossible | Possible | **`peek()` — native** |
 | State cloning | No-cloning theorem | Full copy (expensive) | **`fork()` — O(k) sparse** |
 | Deterministic replay | Non-deterministic | Possible | **Seeded PRNG — native** |
@@ -54,6 +54,8 @@ Traditional: Memory = O(2ⁿ) × 16 bytes
 MDB-OS:      Memory = O(k) × 16 bytes   (k = populated states)
 ```
 
+The memory advantage is strongest for circuits that maintain sparse state throughout execution — such as GHZ states, entanglement operations, and sparse oracle evaluations. Circuits that require full superposition across all basis states will populate the complete state space at that stage, scaling with 2ⁿ. Understanding which circuits stay sparse is key to getting the most from this architecture.
+
 ### 2. Three Operations Quantum Can't Have
 
 | Operation | What It Does | Why Quantum Can't |
@@ -62,7 +64,7 @@ MDB-OS:      Memory = O(k) × 16 bytes   (k = populated states)
 | **`fork()`** | Lossless state cloning in O(k) | No-cloning theorem forbids copying quantum states |
 | **`replay()`** | Deterministic re-execution from seed | Quantum measurement is inherently probabilistic |
 
-These aren't debug features — they're designed capabilities of the MDB framework.
+These aren't debug features — they're designed capabilities of the MDB framework that quantum hardware fundamentally cannot provide.
 
 ### 3. The SuperBit
 
@@ -72,13 +74,35 @@ Every binary pattern receives a geometric identity:
 B = (σ, Ψ, W, A, G)
 
 σ  — binary pattern (classical bits)
-Ψ  — phase component (golden ratio modulation)
-W  — Hamming weight
-A  — bit-length (amplitude)
-G  — geometric coordinate (Fibonacci cascade sum)
+Ψ  — state space (possible interpretations)
+W  — probability weight vector
+A  — anchor positions (immutable bits)
+G  — generation counter (lineage)
 ```
 
-The **Dimensional Cascade** maps every SuperBit into ℝ∞ using Fibonacci-scaled coordinates that converge to the golden ratio **φ = 1.618034...**. This turns search problems into geometric problems — navigating a space instead of enumerating it.
+The **Dimensional Cascade** maps every SuperBit into ℝ∞ using Fibonacci-scaled coordinates that converge to the golden ratio **φ = 1.618034...**. Structurally similar binary strings cluster geometrically, turning certain search problems into spatial navigation rather than exhaustive enumeration.
+
+### 4. Evolution
+
+SuperBits evolve. Three modes:
+
+- **Dimensional evolution** — flips a bit determined by the string's length parity
+- **Learning evolution** — reweights probability distributions based on observed outcomes and rewards
+- **Cascade evolution** — uses φ to drive a low-discrepancy traversal of all bit positions (the same golden-angle pattern found in sunflower spirals and leaf phyllotaxis)
+
+All evolution supports non-destructive preview via `fork()` — the original state is always preserved.
+
+### 5. Network Entanglement
+
+SuperBits can be linked in a cascade-aware entanglement fabric. When one SuperBit evolves, the cascade change ripples through entanglement links to correlated partners — driven by the same φ that governs the cascade. Coupling strength and dimension are configurable per link.
+
+### 6. Dimensional Scheduler
+
+Processes are scheduled by geometric proximity in cascade coordinate space. Related workloads cluster spatially and get batched — a novel scheduling approach derived directly from the dimensional addressing system.
+
+### 7. Cascade-Keyed Data Transformation
+
+The `fold` module implements a deterministic, reversible data transformation keyed by cascade coordinates. The permutation and XOR mask are derived from the SuperBit's dimensional address, making the transformation unique to each data object's geometric identity. This is not compression — the output is the same size as the input — but it is a novel approach to data transformation where the key is intrinsic to the data's dimensional position rather than external.
 
 ---
 
@@ -87,7 +111,7 @@ The **Dimensional Cascade** maps every SuperBit into ℝ∞ using Fibonacci-scal
 MDB-OS ships as a browser-based desktop environment with six built-in applications:
 
 ### 🖥️ Terminal
-Full command-line interface to the MDB engine. Commands include:
+Full command-line interface to the MDB engine:
 - `register <n>` — Create and inspect sparse registers
 - `superbit <n>` / `cascade <n>` — Explore SuperBit geometry
 - `circuit <type> <n>` — Build and run quantum circuits
@@ -95,28 +119,21 @@ Full command-line interface to the MDB engine. Commands include:
 - `shor <n>` — Run Shor's factoring algorithm
 
 ### 🧪 Experiment Lab
-Run comparative experiments:
-- **Grover's Search** — Quadratic speedup on the sparse register
+- **Grover's Search** — Quadratic speedup on sparse oracle circuits
 - **Deutsch-Jozsa** — Determine function properties in one evaluation
-- **Bernstein-Vazirani** — Discover hidden bit strings
+- **Bernstein-Vazirah** — Discover hidden bit strings
 - **Quantum Phase Estimation** — Estimate eigenvalues
 - **Variational Optimization** — Hybrid classical-quantum optimization
 - **MDB Capabilities Demo** — Full showcase of peek/fork/replay
 
 ### ⚡ Circuit Designer
-Visual quantum circuit builder with:
-- Full gate palette: H, X, Y, Z, S, T, CNOT, CZ, SWAP, Toffoli, Fredkin, QFT
-- Preset circuits: Bell state, GHZ state, QFT
-- Real-time execution on the sparse register
+Visual quantum circuit builder with full gate palette: H, X, Y, Z, S, T, CNOT, CZ, SWAP, Toffoli, Fredkin, QFT. Preset circuits: Bell state, GHZ state, QFT.
 
 ### 📁 File Manager
 Persistent file system (IndexedDB-backed) for saving experiments, circuits, and results.
 
 ### 🌀 Playground
-Interactive exploration of:
-- Dimensional Cascade visualization
-- Grover's Search with step-by-step execution
-- Deutsch-Jozsa oracle testing
+Interactive exploration of Dimensional Cascade visualization, Grover's Search step-by-step, and Deutsch-Jozsa oracle testing.
 
 ### ⚙️ Settings
 Customize theme, register defaults, and display preferences.
@@ -139,8 +156,6 @@ The entire application is a single HTML file (~144 KB) plus the WASM binary (~32
 
 ## Gate Set
 
-The sparse register implements a complete universal gate set:
-
 | Gate | Type | Description |
 |---|---|---|
 | H | Single | Hadamard — creates superposition |
@@ -154,56 +169,24 @@ The sparse register implements a complete universal gate set:
 | Fredkin | Three-qubit | Controlled SWAP |
 | QFT | Multi-qubit | Quantum Fourier Transform |
 
-All gates operate directly on the sparse representation — only touching populated states.
-
 ---
 
 ## Algorithms
 
 ### Grover's Search
-Finds a marked item in an unstructured database with **O(√N)** oracle queries instead of the classical O(N). Verified on the sparse register with correct quadratic speedup.
+Finds a marked item in an unstructured database with **O(√N)** oracle queries instead of classical O(N). The quadratic speedup is realized for circuits where the oracle and diffusion steps maintain sparse state. Circuits requiring full superposition across all basis states will populate the complete state space at that stage.
 
 ### Deutsch-Jozsa
 Determines whether a function is constant or balanced in a **single evaluation** — exponential speedup over classical.
 
-### Bernstein-Vazirani
+### Bernstein-Vazirah
 Discovers a hidden bit string in **one query** instead of n queries classically.
 
 ### Shor's Algorithm
-Integer factoring via quantum period-finding on the sparse register.
+Integer factoring via quantum period-finding on the sparse register. The current implementation uses quantum period-finding for N ≤ 20 bits and classical period-finding for larger N. Full quantum period-finding for large N is a development target for future versions.
 
 ### Variational Optimization
-Hybrid approach using parameterized circuits with classical optimization of rotation angles. Includes configurable fitness functions, mutation rates, and retention percentages.
-
----
-
-## Project Structure
-
-```
-Multi-Dimensional-Binary-V0.3.1/
-├── core/                      # Rust source code
-│   ├── src/
-│   │   ├── lib.rs             # Core MDB engine
-│   │   ├── register.rs        # Sparse quantum register
-│   │   ├── gates.rs           # Gate implementations
-│   │   ├── circuit.rs         # Circuit builder
-│   │   ├── algorithms.rs      # Grover, Deutsch-Jozsa, etc.
-│   │   ├── superbit.rs        # SuperBit B = (σ, Ψ, W, A, G)
-│   │   └── cascade.rs         # Dimensional cascade
-│   └── Cargo.toml
-├── wasm/                      # WebAssembly bindings
-│   ├── src/lib.rs             # wasm-bindgen interface
-│   └── Cargo.toml
-├── docs/                      # Deployable web application
-│   ├── index.html             # Landing page
-│   ├── desktop.html           # MDB-OS Desktop
-│   └── pkg/                   # Compiled WASM binary
-│       ├── mdb_wasm.js
-│       ├── mdb_wasm.d.ts
-│       └── mdb_wasm_bg.wasm
-├── README.md
-└── LICENSE
-```
+Hybrid approach using parameterized circuits with classical optimization of rotation angles. Configurable fitness functions, mutation rates, and retention percentages.
 
 ---
 
@@ -215,22 +198,17 @@ Multi-Dimensional-Binary-V0.3.1/
 
 ### Build
 ```bash
-# Clone the repository
 git clone https://github.com/ryanguitard197-ctrl/Multi-Dimensional-Binary-V0.3.1.git
 cd Multi-Dimensional-Binary-V0.3.1
-
-# Build the WASM binary
 cd wasm
 wasm-pack build --target web --out-dir ../docs/pkg
-
-# Serve locally
 cd ../docs
 python3 -m http.server 8080
 # Open http://localhost:8080/desktop.html
 ```
 
 ### No-Build Option
-The `docs/` folder contains pre-built files. Just open `docs/desktop.html` in any modern browser — or serve the `docs/` directory with any static file server.
+The `docs/` folder contains pre-built files. Open `docs/desktop.html` in any modern browser.
 
 ---
 
@@ -253,7 +231,7 @@ The `docs/` folder contains pre-built files. Just open `docs/desktop.html` in an
 
 **Ryan Guitard**
 
-MDB-OS is the result of original research into sparse state representation as an alternative computational primitive. The framework is not a quantum simulator — it is a distinct approach to representing and manipulating superposition-like states using classical data structures.
+MDB-OS is the result of original research into sparse state representation as an alternative computational primitive. The framework is not a quantum simulator — it is a distinct approach to representing and manipulating superposition-like states using classical data structures, with novel OS-level primitives built from the ground up on a Fibonacci-recursive dimensional cascade addressing system.
 
 ---
 
@@ -267,3 +245,4 @@ MDB-OS is the result of original research into sparse state representation as an
   <strong>64 positions. 2 states. 168 bytes.</strong><br>
   <em>The foundation is built. The numbers are verified.</em>
 </p>
+
